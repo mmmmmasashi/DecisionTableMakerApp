@@ -14,7 +14,7 @@
         <TreeView Grid.Column="0" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate DataType= "local:Person" ItemsSource="{Binding Children}">
-                    <TextBlock Text="{Binding Name}"/>
+                    <TreeViewItem Header="{Binding Name}"/>
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>
