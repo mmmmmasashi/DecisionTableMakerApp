@@ -1,4 +1,5 @@
-﻿using DecisionTableLib.Excel;
+﻿using DecisionTableLib.Decisions;
+using DecisionTableLib.Excel;
 using DecisionTableLib.Trees;
 using Reactive.Bindings;
 using System;
@@ -12,15 +13,43 @@ namespace DecisionTableMakerApp.ViewModel
     internal class MainWindowViewModel
     {
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
-        public ReactiveCommand SampleCommand { get; }
+        public ReactiveCommand ImportTableCommand { get; }
+        public ReactiveCommand CreateDecisionTableCommand { get; }
+
+        public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
 
         public MainWindowViewModel()
         {
-            SampleCommand = new ReactiveCommand();
-            SampleCommand.Subscribe(_ => ExecuteSampleCommand());
+            ImportTableCommand = new ReactiveCommand();
+            ImportTableCommand.Subscribe(_ => ExecuteSampleCommand());
+
+            CreateDecisionTableCommand = new ReactiveCommand();
+            CreateDecisionTableCommand.Subscribe(_ => CreateDecisionTable());
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
 
+        }
+
+        private void CreateDecisionTable()
+        {
+
+            if (FactorAndLevelTreeItems.Count() == 0)
+            {
+                MessageBox.Show("決定表を作成するための因子と水準の情報がありません。");
+                return;
+            }
+
+            var text = Clipboard.GetText();
+            var factorAndLevelRootNode = FactorAndLevelTreeItems.First();
+
+            var maker = new DecisionTableMaker(factorAndLevelRootNode);
+            DecisionTable decisionTable = maker.CreateFrom(FormulaText.Value);
+
+            string tsvDesitionTable = decisionTable.ToTsv();
+            Clipboard.SetText(tsvDesitionTable);
+
+            //完了メッセージ
+            MessageBox.Show("決定表を作成しました。クリップボードにコピーしています", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ExecuteSampleCommand()
@@ -45,7 +74,6 @@ namespace DecisionTableMakerApp.ViewModel
 
             FactorAndLevelTreeItems.Clear();
             FactorAndLevelTreeItems.Add(excelRange.ToTree());
-
         }
     }
 }

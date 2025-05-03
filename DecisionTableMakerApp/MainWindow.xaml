@@ -24,7 +24,12 @@
             </TreeView.ItemTemplate>
         </TreeView>
 
-        <Button Grid.Column="1" Name="SampleButton" Command="{Binding SampleCommand}" Width="100" Height="48" Content="Sample"></Button>
+        <Grid Grid.Column="1">
+            <StackPanel>
+                <TextBox Name="formulaTextBox" Height="48" Text="{Binding FormulaText.Value, Mode=TwoWay}"></TextBox>
+                <Button Grid.Column="1" Command="{Binding ImportTableCommand}" Width="100" Height="48" Content="Sample"></Button>
+            </StackPanel>
+        </Grid>
 
     </Grid>
 </Window>

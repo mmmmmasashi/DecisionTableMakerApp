@@ -23,5 +23,6 @@ namespace DecisionTableMakerApp
             InitializeComponent();
             DataContext = new MainWindowViewModel();
         }
+
     }
 }
