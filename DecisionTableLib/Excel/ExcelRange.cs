@@ -1,6 +1,7 @@
 ﻿using DecisionTableLib.Trees;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,16 +15,29 @@ namespace DecisionTableLib.Excel
 
         public ExcelRange(string rangeTsvText, bool includeHeaderLine)
         {
+            var reader = new StringReader(rangeTsvText);
             if (includeHeaderLine)
             {
-                _headerLine = rangeTsvText.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-                _tsvText = rangeTsvText.Substring(_headerLine.Length + 1); // ヘッダー行を除去
+                _headerLine = reader.ReadLine();
+                _tsvText = reader.ReadToEnd();
             }
             else
             {
                 _headerLine = null;
-                _tsvText = rangeTsvText;
+                _tsvText = reader.ReadToEnd();
             }
+
+            SampleCode(rangeTsvText);
+        }
+
+        private void SampleCode(string rangeTsvText)
+        {
+            var lines = rangeTsvText.Split('\n');
+            var table = lines
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .Select(line => line.TrimEnd('\r').Split('\t').ToList())
+                .ToList();
+            Trace.WriteLine(lines);
         }
 
         internal TreeNode ToTree()
@@ -46,7 +60,17 @@ namespace DecisionTableLib.Excel
             var root = new TreeNode("root");
 
             // TSVテキストを行ごとに分割
-            var lines = _tsvText.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var reader = new StringReader(_tsvText);
+            var lines = new List<string>();
+
+            while (reader.Peek() >= 0)
+            {
+                var line = reader.ReadLine();
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    lines.Add(line);
+                }
+            }
 
             // 現在の親ノードを追跡するためのスタック
             var parentStack = new Stack<TreeNode>();
