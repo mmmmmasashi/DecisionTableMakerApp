@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using DecisionTableMakerApp.ViewModel;
+
 namespace DecisionTableMakerApp
 {
     /// <summary>
@@ -19,6 +21,7 @@ namespace DecisionTableMakerApp
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainWindowViewModel();
         }
     }
 }
