@@ -12,6 +12,11 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <TreeView Grid.Column="0" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                </Style>
+            </TreeView.ItemContainerStyle>
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate DataType= "local:Person" ItemsSource="{Binding Children}">
                     <TreeViewItem Header="{Binding Name}"/>

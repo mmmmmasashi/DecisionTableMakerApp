@@ -8,6 +8,7 @@ namespace DecisionTableLib.Trees
 {
     public class TreeNode
     {
+        public bool IsExpanded { get; set; } = true; // 展開状態
         public string Name { get; }
         public List<TreeNode> Children { get; }
 
