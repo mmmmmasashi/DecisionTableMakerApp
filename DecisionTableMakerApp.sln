@@ -5,6 +5,10 @@ VisualStudioVersion = 17.13.35931.197 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DecisionTableMakerApp", "DecisionTableMakerApp\DecisionTableMakerApp.csproj", "{4336172D-89D1-4021-9CB5-2C446B290D30}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DecisionTableLib", "DecisionTableLib\DecisionTableLib.csproj", "{EB65502F-4754-4C7E-864C-11342823F7AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DecisionTableLibTest", "DecisionTableLibTest\DecisionTableLibTest.csproj", "{B405174B-B8F6-4BC9-8984-CEB508EB8C91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{4336172D-89D1-4021-9CB5-2C446B290D30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4336172D-89D1-4021-9CB5-2C446B290D30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4336172D-89D1-4021-9CB5-2C446B290D30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB65502F-4754-4C7E-864C-11342823F7AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB65502F-4754-4C7E-864C-11342823F7AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB65502F-4754-4C7E-864C-11342823F7AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB65502F-4754-4C7E-864C-11342823F7AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B405174B-B8F6-4BC9-8984-CEB508EB8C91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B405174B-B8F6-4BC9-8984-CEB508EB8C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B405174B-B8F6-4BC9-8984-CEB508EB8C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B405174B-B8F6-4BC9-8984-CEB508EB8C91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
