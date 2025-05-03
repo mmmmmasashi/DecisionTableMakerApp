@@ -8,7 +8,7 @@ namespace DecisionTableLibTest
         [Fact]
         public void 因子水準階層を解釈するテスト()
         {
-            string sampleText = "因子\t水準\r\nOS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese";
+            string sampleText = "OS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese";
 
             //以下のような階層構造として認識したい
             //root
@@ -21,7 +21,7 @@ namespace DecisionTableLibTest
             //   L English
             //   L Chinese
 
-            var excelRange = new ExcelRange(sampleText, true);
+            var excelRange = new ExcelRange(sampleText);
             TreeNode rootNode = excelRange.ToTree();
             Assert.Equal("root", rootNode.Name);
 

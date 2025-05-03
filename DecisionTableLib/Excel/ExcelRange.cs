@@ -10,40 +10,81 @@ namespace DecisionTableLib.Excel
 {
     internal class ExcelRange
     {
-        private readonly string? _headerLine;
-        private string _tsvText;
+        private readonly List<List<string>> _columns;
 
-        public ExcelRange(string rangeTsvText, bool includeHeaderLine)
+        public ExcelRange(string rangeTsvText)
         {
-            var reader = new StringReader(rangeTsvText);
-            if (includeHeaderLine)
-            {
-                _headerLine = reader.ReadLine();
-                _tsvText = reader.ReadToEnd();
-            }
-            else
-            {
-                _headerLine = null;
-                _tsvText = reader.ReadToEnd();
-            }
-
-            SampleCode(rangeTsvText);
+            var rawRows = ToTable(rangeTsvText);
+            var rawColumns = ConvertColumnAndRow(rawRows);
+            _columns = FullFillTable(rawColumns);
         }
 
-        private void SampleCode(string rangeTsvText)
+        /// <summary>
+        /// 列単位で見て、空白のフィールドは上の行の値を引き継ぐ
+        /// </summary>
+        /// <param name="columns">列の集合体</param>
+        private List<List<string>> FullFillTable(List<List<string>> columns)
+        {
+            var filledColumns = new List<List<string>>(columns.Count);
+            for (int i = 0; i < columns.Count; i++)
+            {
+                filledColumns.Add(new List<string>(columns[i].Count));
+                for (int j = 0; j < columns[i].Count; j++)
+                {
+                    if (string.IsNullOrEmpty(columns[i][j]))
+                    {
+                        filledColumns[i].Add(filledColumns[i][j - 1]);
+                    }
+                    else
+                    {
+                        filledColumns[i].Add(columns[i][j]);
+                    }
+                }
+            }
+            return filledColumns;
+        }
+
+        /// <summary>
+        /// 列と行を入れ替える
+        /// </summary>
+        private List<List<string>> ConvertColumnAndRow(List<List<string>> rawTable)
+        {
+            var columnCount = rawTable.Max(row => row.Count);
+            var rowCount = rawTable.Count;
+            var convertedTable = new List<List<string>>(columnCount);
+            for (int i = 0; i < columnCount; i++)
+            {
+                convertedTable.Add(new List<string>(rowCount));
+                for (int j = 0; j < rowCount; j++)
+                {
+                    if (i < rawTable[j].Count)
+                    {
+                        convertedTable[i].Add(rawTable[j][i]);
+                    }
+                    else
+                    {
+                        convertedTable[i].Add(string.Empty);
+                    }
+                }
+            }
+            return convertedTable;
+        }
+
+        private List<List<string>> ToTable(string rangeTsvText)
         {
             var lines = rangeTsvText.Split('\n');
             var table = lines
                 .Where(line => !string.IsNullOrWhiteSpace(line))
                 .Select(line => line.TrimEnd('\r').Split('\t').ToList())
                 .ToList();
-            Trace.WriteLine(lines);
+
+            return table;
         }
 
         internal TreeNode ToTree()
         {
             //入力例
-            //string sampleText = "因子\t水準\r\nOS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese";
+            //string sampleText = "OS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese";
 
             //以下のような階層構造として認識したい
             //root
@@ -59,49 +100,34 @@ namespace DecisionTableLib.Excel
             // ルートノードを作成
             var root = new TreeNode("root");
 
-            // TSVテキストを行ごとに分割
-            var reader = new StringReader(_tsvText);
-            var lines = new List<string>();
+            //最上位の列が子要素
+            var nodes_Layer1 = _columns[0]
+                .Distinct()
+                .Where(name => string.IsNullOrEmpty(name) == false)
+                .Select(name => new TreeNode(name));
+            root.Children.AddRange(nodes_Layer1);
 
-            while (reader.Peek() >= 0)
+            //左隣の名前と同じのが親ノード
+            var column1 = _columns[0];
+            var column2 = _columns[1];
+
+            for(int i = 0; i < column1.Count; i++)
             {
-                var line = reader.ReadLine();
-                if (!string.IsNullOrWhiteSpace(line))
-                {
-                    lines.Add(line);
-                }
-            }
+                var parentName = column1[i];
+                var childName = column2[i];
 
-            // 現在の親ノードを追跡するためのスタック
-            var parentStack = new Stack<TreeNode>();
-            parentStack.Push(root);
+                if (string.IsNullOrEmpty(parentName)) throw new ArgumentException("親ノードの名前が空です");
+                //親ノードを探す
+                var parentNode = root.Children.FirstOrDefault(node => node.Name == parentName);
 
-            foreach (var line in lines)
-            {
-                // 行をタブで分割して階層を判定
-                var parts = line.Split('\t');
-                var depth = parts.TakeWhile(string.IsNullOrEmpty).Count(); // 空文字の数が深さ
-
-                // 現在のノードを作成
-                var nodeName = parts[depth];
-                var currentNode = new TreeNode(nodeName);
-
-                // スタックを調整して親ノードを取得
-                while (parentStack.Count > depth + 1)
-                {
-                    parentStack.Pop();
-                }
-
-                // 親ノードに現在のノードを追加
-                parentStack.Peek().Children.Add(currentNode);
-
-                // 現在のノードをスタックに追加
-                parentStack.Push(currentNode);
+                //子ノードを作って親ノードに追加
+                if (string.IsNullOrEmpty(childName)) throw new InvalidDataException();
+                var childNode = new TreeNode(childName);
+                parentNode.Children.Add(childNode);
             }
 
             return root;
-
-
         }
+
     }
 }
