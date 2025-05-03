@@ -44,5 +44,28 @@ namespace DecisionTableLibTest
             TreeNode rootNode = range.ToTree();
             return rootNode;
         }
+
+        public static TreeNode 三因子水準表を作成()
+        {
+            string sampleText = "OS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese\r\nVersion\t1.0\r\n\t2.0";
+
+            //以下のような階層構造として認識したい
+            //root
+            // L OS
+            //   L Windows  
+            //   L Mac
+            //   L Linux
+            // L Language
+            //   L Japanese
+            //   L English
+            //   L Chinese
+            // L Version
+            //   L 1.0
+            //   L 2.0
+
+            var range = new ExcelRange(sampleText);
+            TreeNode rootNode = range.ToTree();
+            return rootNode;
+        }
     }
 }
