@@ -7,7 +7,19 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Button Name="SampleButton" Command="{Binding SampleCommand}" Width="100" Height="48" Content="Sample"></Button>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TreeView Grid.Column="0" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate DataType= "local:Person" ItemsSource="{Binding Children}">
+                    <TextBlock Text="{Binding Name}"/>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+
+        <Button Grid.Column="1" Name="SampleButton" Command="{Binding SampleCommand}" Width="100" Height="48" Content="Sample"></Button>
 
     </Grid>
 </Window>

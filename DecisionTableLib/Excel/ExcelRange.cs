@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DecisionTableLib.Excel
 {
-    internal class ExcelRange
+    public class ExcelRange
     {
         private readonly List<List<string>> _columns;
 
@@ -81,7 +81,7 @@ namespace DecisionTableLib.Excel
             return table;
         }
 
-        internal TreeNode ToTree()
+        public TreeNode ToTree()
         {
             //入力例
             //string sampleText = "OS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese";

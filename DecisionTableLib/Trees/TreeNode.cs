@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace DecisionTableLib.Trees
 {
-    internal class TreeNode
+    public class TreeNode
     {
-        internal string Name { get; }
-        internal List<TreeNode> Children { get; }
+        public string Name { get; }
+        public List<TreeNode> Children { get; }
 
-        internal TreeNode(string name)
+        public TreeNode(string name)
         {
             Name = name;
             Children = new List<TreeNode>();
