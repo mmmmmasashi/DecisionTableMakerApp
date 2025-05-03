@@ -8,21 +8,7 @@ namespace DecisionTableLibTest
         [Fact]
         public void 因子水準階層を解釈するテスト()
         {
-            string sampleText = "OS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese";
-
-            //以下のような階層構造として認識したい
-            //root
-            // L OS
-            //   L Windows  
-            //   L Mac
-            //   L Linux
-            // L Language
-            //   L Japanese
-            //   L English
-            //   L Chinese
-
-            var excelRange = new ExcelRange(sampleText);
-            TreeNode rootNode = excelRange.ToTree();
+            TreeNode rootNode = サンプルの因子水準表を作成();
             Assert.Equal("root", rootNode.Name);
 
             var children1 = rootNode.Children;
@@ -37,6 +23,26 @@ namespace DecisionTableLibTest
             Assert.Equal("Mac", children1_1[1].Name);
             Assert.Equal("Linux", children1_1[2].Name);
 
+        }
+
+        public static TreeNode サンプルの因子水準表を作成()
+        {
+            string sampleText = "OS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese";
+
+            //以下のような階層構造として認識したい
+            //root
+            // L OS
+            //   L Windows  
+            //   L Mac
+            //   L Linux
+            // L Language
+            //   L Japanese
+            //   L English
+            //   L Chinese
+
+            var range = new ExcelRange(sampleText);
+            TreeNode rootNode = range.ToTree();
+            return rootNode;
         }
     }
 }
