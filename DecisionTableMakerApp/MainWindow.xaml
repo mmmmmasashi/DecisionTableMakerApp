@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:DecisionTableMakerApp"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
@@ -11,22 +12,38 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <TreeView Grid.Column="0" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
-            <TreeView.ItemContainerStyle>
-                <Style TargetType="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-                </Style>
-            </TreeView.ItemContainerStyle>
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate DataType= "local:Person" ItemsSource="{Binding Children}">
-                    <TreeViewItem Header="{Binding Name}"/>
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TreeView Grid.Row="0" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate DataType= "local:Person" ItemsSource="{Binding Children}">
+                        <TreeViewItem Header="{Binding Name}"/>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+            <Button Grid.Row="1" Content="因子水準表取込" Command="{Binding ImportTableCommand}"/>
+        </Grid>
 
         <Grid Grid.Column="1">
             <StackPanel>
-                <TextBox Name="formulaTextBox" Height="48" Text="{Binding FormulaText.Value, Mode=TwoWay}"></TextBox>
+                <TextBlock Text="計算式"/>
+                <TextBox Name="formulaTextBox" Height="48" Text="{Binding FormulaText.Value, Mode=OneWayToSource}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="TextChanged">
+                            <i:InvokeCommandAction Command="{Binding FormulaChangedCommand}" CommandParameter="{Binding Text, ElementName=formulaTextBox}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TextBox>
+                <TextBlock Text="構文解析結果"/>
+                <TextBlock Text="{Binding ParsedResultText.Value}"/>
                 <Button Grid.Column="1" Command="{Binding ImportTableCommand}" Width="100" Height="48" Content="Sample"></Button>
             </StackPanel>
         </Grid>

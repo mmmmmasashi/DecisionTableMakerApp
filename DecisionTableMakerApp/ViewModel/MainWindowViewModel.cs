@@ -15,11 +15,17 @@ namespace DecisionTableMakerApp.ViewModel
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
         public ReactiveCommand ImportTableCommand { get; }
         public ReactiveCommand CreateDecisionTableCommand { get; }
+        public ReactiveCommand FormulaChangedCommand { get; }
 
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
 
         public MainWindowViewModel()
         {
+            FormulaChangedCommand = new ReactiveCommand();
+            FormulaChangedCommand.Subscribe(_ =>
+            {
+                Trace.WriteLine($"FormulaText: {FormulaText.Value}");
+            });
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ExecuteSampleCommand());
 
