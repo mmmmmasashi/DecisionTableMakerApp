@@ -40,7 +40,7 @@
             <StackPanel Grid.Row="0">
                 <TextBlock Text="計算式"/>
                 <TextBox Name="formulaTextBox" Height="48" 
-                         Text="{Binding FormulaText.Value, Mode=OneWayToSource,
+                         Text="{Binding FormulaText.Value, Mode=TwoWay,
                         UpdateSourceTrigger=PropertyChanged}"/>
                 <StackPanel>
                     <TextBlock Text="末尾に追加するテキスト"/>

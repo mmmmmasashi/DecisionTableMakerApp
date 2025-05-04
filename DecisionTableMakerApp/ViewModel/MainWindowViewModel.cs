@@ -35,7 +35,7 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void AddNewRowSetting(string col1Text, string col2Text)
         {
-            var newRowSetting = new AdditionalRowSetting(DeleteAdditionalRowSetting, UpdateTable, "", "");
+            var newRowSetting = new AdditionalRowSetting(DeleteAdditionalRowSetting, UpdateTable, col1Text, col2Text);
             AdditionalRowSettings.Add(newRowSetting);
         }
 
@@ -58,6 +58,7 @@ namespace DecisionTableMakerApp.ViewModel
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
             _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
             FormulaText.Subscribe(text => UpdateTable());
+            FormulaText.Value = Properties.Settings.Default.LastFormulaText;
 
             // 前回保存されたテキストを読み込む
             var lastText = Properties.Settings.Default.LastFactorLevelText;
@@ -77,6 +78,12 @@ namespace DecisionTableMakerApp.ViewModel
                 ParsedResultText.Value = decisionTable.ToString();
                 DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable()
                     .FormatToAppView(AdditionalRowSettings);
+
+                if (text != Properties.Settings.Default.LastFormulaText)
+                {
+                    Properties.Settings.Default.LastFormulaText = text;
+                    Properties.Settings.Default.Save();
+                }
             }
             catch (Exception ex)
             {
@@ -146,6 +153,7 @@ namespace DecisionTableMakerApp.ViewModel
                     Properties.Settings.Default.LastFactorLevelText = text;
                     Properties.Settings.Default.Save();
                 }
+                
             }
             catch (Exception ex)
             {
