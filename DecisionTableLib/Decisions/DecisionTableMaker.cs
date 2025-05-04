@@ -11,11 +11,14 @@ namespace DecisionTableLib.Decisions
     public class DecisionTableMaker
     {
         private readonly FactorLevelTable _factorLevelTable;
+        private readonly bool _evenPlusMode;
+        private readonly RPN _rpn;
 
-        public DecisionTableMaker(FactorLevelTable factorLevelTable)
+        public DecisionTableMaker(FactorLevelTable factorLevelTable, PlusMode plusMode = PlusMode.FillEnd)
         {
             //TODO:深さ3以上は例外にすること
             this._factorLevelTable = factorLevelTable;
+            _rpn = new RPN(plusMode);
         }
 
         /// <summary>
@@ -27,13 +30,13 @@ namespace DecisionTableLib.Decisions
             var tokenList = new Tokenizer().Tokenize(formulaText);//トークンの取り出し
 
             //逆ポーランド記法になったトークン集
-            var rpn = new RPN().ToRPN(tokenList);
+            var rpn = _rpn.ToRPN(tokenList);
 
             //入力 : 因子のリスト(因子は複数の水準を持つ)
             var factors = _factorLevelTable.Factors;
 
             //期待する出力 : テストケースの集合体。各テストケースは、(string : 因子, string : 水準)のリストを持つ
-            IEnumerable<IEnumerable<(string, string)>> combinations = new RPN().EvaluateRPN(rpn, factors);
+            IEnumerable<IEnumerable<(string, string)>> combinations = _rpn.EvaluateRPN(rpn, factors);
 
             var testCases = combinations.Select(factorLevelCombination => new TestCase(factorLevelCombination));
             return new DecisionTable(testCases);

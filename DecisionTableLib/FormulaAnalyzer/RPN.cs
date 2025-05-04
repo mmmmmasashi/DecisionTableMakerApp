@@ -7,8 +7,22 @@ using System.Threading.Tasks;
 
 namespace DecisionTableLib.FormulaAnalyzer
 {
+    public enum PlusMode
+    {
+        
+        FillEnd,//末尾の要素で埋め合わせ
+        FillEven,//同数程度となるように埋め合わせ
+    }
+
     public class RPN
     {
+        private readonly PlusMode _plusMode;
+
+        public RPN(PlusMode plusMode = PlusMode.FillEnd)
+        {
+            this._plusMode = plusMode;
+        }
+
         /// <summary>
         /// 逆ポーランド記法を評価する
         /// </summary>
@@ -66,15 +80,9 @@ namespace DecisionTableLib.FormulaAnalyzer
                     //例) 左 [[("OS", "Windows")], [("OS", "Mac")], [("OS", "Linux")]]
                     //右 [[("Language", "Japanese")], [("Language", "English")]]のとき
                     //[[("OS", "Windows"), ("Language", "Japanese")], [("OS", "Mac"), ("Language", "Japanese")], [("OS", "Linux"), ("Language", "English")],
-                    //足りない分は最後の様子で埋める(仮)
-                    
+
                     //数を合わせる
-                    int lengthDiff = left.Count - right.Count;
-                    for (int i = 0; i < lengthDiff; i++)
-                    {
-                        //一旦、末尾の要素で補う
-                        right.Add(right.Last());
-                    }
+                    right = new Filler().Fill(right, left.Count, _plusMode);
 
                     var product = new List<List<(string, string)>>();
                     for (int i = 0; i < left.Count; i++)
@@ -101,6 +109,7 @@ namespace DecisionTableLib.FormulaAnalyzer
             }
             return stack.Pop();
         }
+
 
         /// <summary>
         /// 逆ポーランド記法に変換する

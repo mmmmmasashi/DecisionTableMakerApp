@@ -1,4 +1,5 @@
 ﻿using DecisionTableLib.Decisions;
+using DecisionTableLib.FormulaAnalyzer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -211,6 +212,36 @@ namespace DecisionTableLibTest
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "Japanese", "2.0");
 
             AssertTestCase3FactorLevels(testCases[i++], "Windows", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "2.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Chinese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Chinese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
+        }
+
+        [Fact]
+        public void 三因子_前半に足し算_足し算を半々にするオプション()
+        {
+            var formula = "[Version] + [Language] * [OS]";
+            var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
+            var makerHalfAndHalf = new DecisionTableMaker(因子水準表サンプル, PlusMode.FillEven);
+            DecisionTable decisionTable = makerHalfAndHalf.CreateFrom(formula);
+            List<TestCase> testCases = decisionTable.TestCases;
+            
+            foreach (var item in testCases)
+            {
+                _output.WriteLine(item.ToString());
+            }
+
+            Assert.Equal(9, testCases.Count);
+            //因子を指定すると水準がとれる
+            int i = 0;
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Japanese", "1.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "English", "1.0");
             AssertTestCase3FactorLevels(testCases[i++], "Mac", "English", "2.0");
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "2.0");
 
