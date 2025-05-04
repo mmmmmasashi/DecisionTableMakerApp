@@ -103,5 +103,47 @@ namespace DecisionTableLibTest
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "1.0");
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
         }
+
+        [Fact]
+        public void 三因子の掛け合わせ_式の記載順に従ってケースの並びが変わる()
+        {
+            //サンプルの因子水準表を取得
+            var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
+
+            //サンプルの計算式
+            string 計算式 = "[Language] * [Version] * [OS]";
+
+            var maker = new DecisionTableMaker(因子水準表サンプル);
+            DecisionTable decisionTable = maker.CreateFrom(計算式);
+            List<TestCase> testCases = decisionTable.TestCases;
+            Assert.Equal(18, testCases.Count);
+
+            foreach (var item in testCases)
+            {
+                _output.WriteLine(item.ToString());
+            }
+            //因子を指定すると水準がとれる
+            int i = 0;
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Japanese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Japanese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Japanese", "2.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "English", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "English", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "2.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Chinese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Chinese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Chinese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Chinese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
+        }
     }
 }
