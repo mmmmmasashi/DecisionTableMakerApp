@@ -13,10 +13,20 @@ namespace DecisionTableLibTest
     public class DecisionTableMakerTest
     {
         private readonly ITestOutputHelper _output;
+        private readonly DecisionTableMaker maker;
 
         public DecisionTableMakerTest(ITestOutputHelper output)
         {
             _output = output;
+            var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
+            maker = new DecisionTableMaker(因子水準表サンプル);
+        }
+
+        private List<TestCase> CreateCasesHelper(string 計算式)
+        {
+            DecisionTable decisionTable = maker.CreateFrom(計算式);
+            List<TestCase> testCases = decisionTable.TestCases;
+            return testCases;
         }
 
         private void AssertTestCaseLevels(TestCase testCase, string expectedOS, string expectedLanguage)
@@ -37,15 +47,8 @@ namespace DecisionTableLibTest
         [Fact]
         public void 掛け算でディシジョンテーブルをつくるテスト()
         {
-            //サンプルの因子水準表を取得
-            var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
-
             //サンプルの計算式
-            string 計算式 = "[OS] * [Language]";
-
-            var maker = new DecisionTableMaker(因子水準表サンプル);
-            DecisionTable decisionTable = maker.CreateFrom(計算式);
-            List<TestCase> testCases = decisionTable.TestCases;
+            List<TestCase> testCases = CreateCasesHelper("[OS] * [Language]");
             Assert.Equal(9, testCases.Count);
 
             //因子を指定すると水準がとれる
@@ -65,19 +68,9 @@ namespace DecisionTableLibTest
         [Fact]
         public void 足し算でディシジョンテーブルをつくるテスト()
         {
-            //サンプルの因子水準表を取得
-            var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
-
             //サンプルの計算式
-            string 計算式 = "[OS] + [Language]";
+            List<TestCase> testCases = CreateCasesHelper("[OS] + [Language]");
 
-            var maker = new DecisionTableMaker(因子水準表サンプル);
-            DecisionTable decisionTable = maker.CreateFrom(計算式);
-            List<TestCase> testCases = decisionTable.TestCases;
-            foreach (var testCase in testCases)
-            {
-                _output.WriteLine(testCase.ToString());
-            }
             Assert.Equal(3, testCases.Count);
 
             //因子を指定すると水準がとれる
@@ -90,15 +83,8 @@ namespace DecisionTableLibTest
         [Fact]
         public void 三因子の掛け合わせのディシジョンテーブルを作るテスト()
         {
-            //サンプルの因子水準表を取得
-            var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
-
             //サンプルの計算式
-            string 計算式 = "[OS] * [Language] * [Version]";
-
-            var maker = new DecisionTableMaker(因子水準表サンプル);
-            DecisionTable decisionTable = maker.CreateFrom(計算式);
-            List<TestCase> testCases = decisionTable.TestCases;
+            List<TestCase> testCases = CreateCasesHelper("[OS] * [Language] * [Version]");
             Assert.Equal(18, testCases.Count);
 
             foreach (var item in testCases)
@@ -132,15 +118,8 @@ namespace DecisionTableLibTest
         [Fact]
         public void 三因子の掛け合わせ_式の記載順に従ってケースの並びが変わる()
         {
-            //サンプルの因子水準表を取得
-            var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
-
             //サンプルの計算式
-            string 計算式 = "[Language] * [Version] * [OS]";
-
-            var maker = new DecisionTableMaker(因子水準表サンプル);
-            DecisionTable decisionTable = maker.CreateFrom(計算式);
-            List<TestCase> testCases = decisionTable.TestCases;
+            List<TestCase> testCases = CreateCasesHelper("[Language] * [Version] * [OS]");
             Assert.Equal(18, testCases.Count);
 
             foreach (var item in testCases)
@@ -170,5 +149,6 @@ namespace DecisionTableLibTest
             AssertTestCase3FactorLevels(testCases[i++], "Mac", "Chinese", "2.0");
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
         }
+
     }
 }
