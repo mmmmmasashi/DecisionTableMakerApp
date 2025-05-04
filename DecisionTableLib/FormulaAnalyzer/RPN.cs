@@ -32,11 +32,11 @@ namespace DecisionTableLib.FormulaAnalyzer
 
                     //left, rightの要素を全通り組み合わせる
                     var product = new List<List<(string, string)>>();
-                    foreach (List<(string, string)> eachTestCase in left)
+                    foreach (List<(string, string)> existingTestCase in left)
                     {
-                        foreach (List<(string, string)> newTestCase in right)
+                        foreach (List<(string, string)> multipliedTestCase in right)
                         {
-                            product.Add(eachTestCase.Concat(newTestCase).ToList());
+                            product.Add(existingTestCase.Concat(multipliedTestCase).ToList());
                         }
                     }
 
@@ -45,11 +45,46 @@ namespace DecisionTableLib.FormulaAnalyzer
                 }
                 else if (token == "+")
                 {
+                    //足し算とは、ケース数が大きい方のケース集合に、
+                    //ケース数が少ない方のケース集合を溶け込ませること
+                    //改善メモ:
+                    //ただ、たとえば5ケースに2(x or y)ケースを足す場合、
+                    //xyyyyとなるとイマイチ。
+                    //xxyyyのように、半々ぐらいにしたい
                     var right = stack.Pop();
                     var left = stack.Pop();
 
-                    //TODO:この処理は間違っている
-                    stack.Push(left.Concat(right).ToList());
+                    if (right.Count > left.Count)
+                    {
+                        //右の方が多い場合、右を左に
+                        var temp = right;
+                        right = left;
+                        left = temp;
+                    }
+                    //以下は左の方が多い前提
+                    //左のケース集合に、右のケース集合を溶け込ませる
+                    //例) 左 [[("OS", "Windows")], [("OS", "Mac")], [("OS", "Linux")]]
+                    //右 [[("Language", "Japanese")], [("Language", "English")]]のとき
+                    //[[("OS", "Windows"), ("Language", "Japanese")], [("OS", "Mac"), ("Language", "Japanese")], [("OS", "Linux"), ("Language", "English")],
+                    //足りない分は最後の様子で埋める(仮)
+                    
+                    //数を合わせる
+                    for (int i = 0; i < left.Count - right.Count; i++)
+                    {
+                        //一旦、末尾の要素で補う
+                        right.Add(right.Last());
+                    }
+
+                    var product = new List<List<(string, string)>>();
+                    for (int i = 0; i < left.Count; i++)
+                    {
+                        //左の要素と、右の要素を組み合わせる
+                        var newTestCase = new List<(string, string)>();
+                        newTestCase.AddRange(left[i]);
+                        newTestCase.AddRange(right[i]);
+                        product.Add(newTestCase);
+                    }
+                    stack.Push(product);
                 }
                 else
                 {
