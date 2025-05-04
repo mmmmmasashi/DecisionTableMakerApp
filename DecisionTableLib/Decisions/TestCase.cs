@@ -19,9 +19,13 @@ namespace DecisionTableLib.Decisions
             }
         }
 
-        public string LevelOf(string factorKey)
+        public Level LevelOf(string factorKey)
         {
-            return _factorLevelPairs[factorKey];
+            if (_factorLevelPairs.ContainsKey(factorKey) == false)
+            {
+                return Level.DontCare;
+            }
+            return new Level(_factorLevelPairs[factorKey]);
         }
     }
 }

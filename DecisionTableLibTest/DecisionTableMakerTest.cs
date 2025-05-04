@@ -13,15 +13,17 @@ namespace DecisionTableLibTest
         
         private void AssertTestCaseLevels(TestCase testCase, string expectedOS, string expectedLanguage)
         {
-            Assert.Equal(expectedOS, testCase.LevelOf("OS"));
-            Assert.Equal(expectedLanguage, testCase.LevelOf("Language"));
+            Assert.Equal(new Level(expectedOS), testCase.LevelOf("OS"));
+            Assert.Equal(new Level(expectedLanguage), testCase.LevelOf("Language"));
+            Assert.Equal(Level.DontCare, testCase.LevelOf("Version"));
+
         }
 
         private void AssertTestCase3FactorLevels(TestCase testCase, string expectedOS, string expectedLanguage, string expectedVersion)
         {
-            Assert.Equal(expectedOS, testCase.LevelOf("OS"));
-            Assert.Equal(expectedLanguage, testCase.LevelOf("Language"));
-            Assert.Equal(expectedVersion, testCase.LevelOf("Version"));
+            Assert.Equal(new Level(expectedOS), testCase.LevelOf("OS"));
+            Assert.Equal(new Level(expectedLanguage), testCase.LevelOf("Language"));
+            Assert.Equal(new Level(expectedVersion), testCase.LevelOf("Version"));
         }
 
         [Fact]
