@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DecisionTableLib.Decisions
 {
-    public class Factor
+    public record Factor
     {
         public string Name { get; }
         public List<Level> Levels { get; }
@@ -14,6 +14,22 @@ namespace DecisionTableLib.Decisions
         {
             Name = name;
             Levels = levels;
+        }
+
+        public virtual bool Equals(Factor? other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            // Name の等価性と Levels の内容の等価性を比較
+            return Name == other.Name &&
+                   Levels.SequenceEqual(other.Levels);
+        }
+
+        public override int GetHashCode()
+        {
+            // Levels の内容を考慮したハッシュコードを生成
+            return HashCode.Combine(Name, Levels.Aggregate(0, (hash, level) => hash ^ level.GetHashCode()));
         }
     }
 }

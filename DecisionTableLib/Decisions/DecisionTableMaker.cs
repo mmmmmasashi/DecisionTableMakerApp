@@ -34,8 +34,15 @@ namespace DecisionTableLib.Decisions
             //逆ポーランド記法になったトークン集
             var rpn = _rpn.ToRPN(tokenList);
 
+            //独自定義の水準を持つ因子は、因子名を更新。新因子 - > 水準のリストを抽出
+            var logic = new OriginalLevelLogic();
+            (rpn, List<Factor> factorOverwriteList) = logic.OverwriteByOriginalLevels(rpn);
+
             //入力 : 因子のリスト(因子は複数の水準を持つ)
-            var factors = _factorLevelTable.Factors;
+            var factorsTmp = _factorLevelTable.Factors;
+
+            //新定義の因子-水準で上書き。ない場合は新規追加
+            var factors = logic.OverwriteFactors(factorsTmp, factorOverwriteList);
 
             //期待する出力 : テストケースの集合体。各テストケースは、(string : 因子, string : 水準)のリストを持つ
             IEnumerable<IEnumerable<(string, string)>> combinations = _rpn.EvaluateRPN(rpn, factors);
@@ -43,22 +50,6 @@ namespace DecisionTableLib.Decisions
             var testCases = combinations.Select(factorLevelCombination => new TestCase(factorLevelCombination));
             return new DecisionTable(testCases);
         }
-
-        // 汎用的な直積生成メソッド
-        //static IEnumerable<IEnumerable<T>> CartesianProduct<T>(IEnumerable<IEnumerable<T>> sequences)
-        //{
-        //    IEnumerable<IEnumerable<T>> result = new[] { Enumerable.Empty<T>() };
-
-        //    foreach (var sequence in sequences)
-        //    {
-        //        result = result.SelectMany(
-        //            acc => sequence,
-        //            (acc, item) => acc.Append(item)
-        //        );
-        //    }
-
-        //    return result;
-        //}
 
 
     }

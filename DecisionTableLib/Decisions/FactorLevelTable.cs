@@ -27,6 +27,6 @@ namespace DecisionTableLib.Decisions
             }
         }
 
-        public IEnumerable<Factor> Factors { get => new List<Factor>(_table); }
+        public List<Factor> Factors { get => new List<Factor>(_table); }
     }
 }
