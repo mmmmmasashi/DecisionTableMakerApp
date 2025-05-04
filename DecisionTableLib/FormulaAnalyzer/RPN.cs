@@ -69,7 +69,8 @@ namespace DecisionTableLib.FormulaAnalyzer
                     //足りない分は最後の様子で埋める(仮)
                     
                     //数を合わせる
-                    for (int i = 0; i < left.Count - right.Count; i++)
+                    int lengthDiff = left.Count - right.Count;
+                    for (int i = 0; i < lengthDiff; i++)
                     {
                         //一旦、末尾の要素で補う
                         right.Add(right.Last());

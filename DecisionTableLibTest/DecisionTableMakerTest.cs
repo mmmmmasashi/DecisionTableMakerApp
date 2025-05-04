@@ -81,6 +81,21 @@ namespace DecisionTableLibTest
         }
 
         [Fact]
+        public void 足し算でディシジョンテーブルをつくるテスト_右のほうが数がおおい()
+        {
+            //サンプルの計算式
+            List<TestCase> testCases = CreateCasesHelper("[Version] + [OS]");
+
+            Assert.Equal(3, testCases.Count);
+
+            //因子を指定すると水準がとれる
+            int i = 0;
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Don't Care",  "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Don't Care",  "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Don't Care",  "2.0");
+        }
+
+        [Fact]
         public void 三因子の掛け合わせのディシジョンテーブルを作るテスト()
         {
             //サンプルの計算式
@@ -112,6 +127,33 @@ namespace DecisionTableLibTest
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "1.0");
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "2.0");
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
+        }
+
+
+        [Fact]
+        public void 三因子_掛け算と足し算の組み合わせ()
+        {
+            //サンプルの計算式
+            List<TestCase> testCases = CreateCasesHelper("[OS] * [Language] + [Version]");
+            Assert.Equal(9, testCases.Count);
+
+            foreach (var item in testCases)
+            {
+                _output.WriteLine(item.ToString());
+            }
+            //因子を指定すると水準がとれる
+            int i = 0;
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Chinese", "2.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Japanese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Chinese", "2.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Japanese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "2.0");
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
         }
 
