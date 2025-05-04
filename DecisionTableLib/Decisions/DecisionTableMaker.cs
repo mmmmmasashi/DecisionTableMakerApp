@@ -24,30 +24,17 @@ namespace DecisionTableLib.Decisions
         /// <param name="formulaText">因子水準の計算式。具体例) [OS] * [Language] + [Version]</param>
         public DecisionTable CreateFrom(string formulaText)
         {
-            var tokenList = new Tokenizer().Tokenize(formulaText);
-            var factorList = tokenList.ToArray();
+            var tokenList = new Tokenizer().Tokenize(formulaText);//トークンの取り出し
 
-            List<IEnumerable<(string, string)>> list = _factorLevelTable.Factors
-                .Where(factor => factorList.Contains(factor.Name))
-                .OrderBy(factor => Array.IndexOf(factorList, factor.Name))
-                .Select(factor => factor.Levels.Select(level => (factor.Name, level)))
-                .ToList();
+            //逆ポーランド記法になったトークン集
+            var rpn = new RPN().ToRPN(tokenList);
 
-            //こういう状態
-            // (OS, Windows), (OS, Mac), (OS, Linux)
-            // (Language, Japanese), (Language, English), (Language, Chinese)
-            // (Version, 1.0), (Version, 2.0)
+            //入力 : 因子のリスト(因子は複数の水準を持つ)
+            var factors = _factorLevelTable.Factors;
 
-            //直積をとる
-            var combinations = list[0].Select(pair => new List<(string, string)>() { pair }).Cartesian(list[1]).ToList();
-            if (list.Count > 2)
-            {
-                combinations = combinations.Cartesian(list[2]).ToList();
-            }
-            //この時点で以下の状態
-            //(OS, Windows), (Language, Japanese)
-            //(OS, Windows), (Language, English)
-            //:
+            //期待する出力 : テストケースの集合体。各テストケースは、(string : 因子, string : 水準)のリストを持つ
+            IEnumerable<IEnumerable<(string, string)>> combinations = new RPN().EvaluateRPN(rpn, factors);
+
             var testCases = combinations.Select(factorLevelCombination => new TestCase(factorLevelCombination));
             return new DecisionTable(testCases);
         }
