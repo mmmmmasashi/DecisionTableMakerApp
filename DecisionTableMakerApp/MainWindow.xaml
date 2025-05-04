@@ -39,8 +39,28 @@
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0">
                 <TextBlock Text="計算式"/>
-                <TextBox Name="formulaTextBox" Height="48" Text="{Binding FormulaText.Value, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}">
-                </TextBox>
+                <TextBox Name="formulaTextBox" Height="48" 
+                         Text="{Binding FormulaText.Value, Mode=OneWayToSource,
+                        UpdateSourceTrigger=PropertyChanged}"/>
+                <StackPanel>
+                    <TextBlock Text="末尾に追加するテキスト"/>
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding AdditionalRowSettings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="1列目"/>
+                                        <TextBox Width="100" Text="{Binding Col1Text.Value, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBlock Text="2列目"/>
+                                        <TextBox Width="100" Text="{Binding Col2Text.Value, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <Button Content="削除" Command="{Binding DeleteCommand}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Content=" + " Command="{Binding AddAdditionalRowCommand}" Width="Auto" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </StackPanel>
                 <TextBlock Text="構文解析結果"/>
                 <RichTextBox Name="resultTextBox" IsReadOnly="True" Height="200" VerticalScrollBarVisibility="Auto">
                     <FlowDocument>

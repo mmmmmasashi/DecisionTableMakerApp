@@ -16,7 +16,9 @@ namespace DecisionTableMakerApp.ViewModel
     internal class MainWindowViewModel
     {
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
+        public ObservableCollection<AdditionalRowSetting> AdditionalRowSettings { get; private set; } = new ObservableCollection<AdditionalRowSetting>();
         public ReactiveCommand ImportTableCommand { get; }
+        public ReactiveCommand AddAdditionalRowCommand { get; }
         public ReactiveCommand CreateDecisionTableCommand { get; }
 
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
@@ -26,8 +28,27 @@ namespace DecisionTableMakerApp.ViewModel
 
         private DecisionTableMaker _decisionTableMaker;
 
+        private void DeleteAdditionalRowSetting(AdditionalRowSetting targetSetting)
+        {
+            AdditionalRowSettings.Remove(targetSetting);
+        }
+
+        private void AddNewRowSetting(string col1Text, string col2Text)
+        {
+            var newRowSetting = new AdditionalRowSetting(DeleteAdditionalRowSetting, UpdateTable, "", "");
+            AdditionalRowSettings.Add(newRowSetting);
+        }
+
         public MainWindowViewModel()
         {
+            AddAdditionalRowCommand = new ReactiveCommand();
+            AddAdditionalRowCommand.Subscribe(_ => AddNewRowSetting("", ""));
+            AdditionalRowSettings = new ObservableCollection<AdditionalRowSetting>();
+            AddNewRowSetting("結果", "実施日");
+            AddNewRowSetting("", "実施者");
+
+            AdditionalRowSettings.CollectionChanged += (sender, args) => UpdateTable();
+
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ExecuteSampleCommand());
 
@@ -36,26 +57,31 @@ namespace DecisionTableMakerApp.ViewModel
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
             _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
-            FormulaText.Subscribe(text =>
-            {
-                try
-                {
-                    var decisionTable = _decisionTableMaker.CreateFrom(text);
-                    ParsedResultText.Value = decisionTable.ToString();
-                    DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable().IncludeColumnNameToCell();
-                }
-                catch (Exception ex)
-                {
-                    //異常な文字列を入力した場合は、解析エラーであることだけ通知
-                    ParsedResultText.Value = "解析エラー" + Environment.NewLine + ex.Message;
-                }
-            });
+            FormulaText.Subscribe(text => UpdateTable());
 
             // 前回保存されたテキストを読み込む
             var lastText = Properties.Settings.Default.LastFactorLevelText;
             if (!string.IsNullOrEmpty(lastText))
             {
                 LoadFactorLevelTable(lastText);
+            }
+        }
+
+        private void UpdateTable()
+        {
+            if (_decisionTableMaker == null) return;
+            var text = FormulaText.Value;
+            try
+            {
+                var decisionTable = _decisionTableMaker.CreateFrom(text);
+                ParsedResultText.Value = decisionTable.ToString();
+                DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable()
+                    .FormatToAppView(AdditionalRowSettings);
+            }
+            catch (Exception ex)
+            {
+                //異常な文字列を入力した場合は、解析エラーであることだけ通知
+                ParsedResultText.Value = "解析エラー" + Environment.NewLine + ex.Message;
             }
         }
 
@@ -133,7 +159,25 @@ namespace DecisionTableMakerApp.ViewModel
         /// <summary>
         /// 列名を1行目に埋め込む。元々の1行目以降は2行目以降に移動する。
         /// </summary>
-        public static DataTable IncludeColumnNameToCell(this DataTable originalTable)
+        public static DataTable FormatToAppView(this DataTable originalTable, IEnumerable<AdditionalRowSetting> additionalRowSettings)
+        {
+            var table = IncludeColumnNameToCell(originalTable);
+            AddNewRows(table, additionalRowSettings);
+            return table;
+        }
+
+        private static void AddNewRows(DataTable table, IEnumerable<AdditionalRowSetting> additionalRowSettings)
+        {
+            foreach (var newRowSetting in additionalRowSettings)
+            {
+                var newRow = table.NewRow();
+                newRow[0] = newRowSetting.Col1Text.Value;
+                newRow[1] = newRowSetting.Col2Text.Value;
+                table.Rows.Add(newRow);
+            }
+        }
+
+        private static DataTable IncludeColumnNameToCell(DataTable originalTable)
         {
             // 新しいDataTable（列名もデータとして含めたい）
             DataTable withHeaderAsData = new DataTable();
