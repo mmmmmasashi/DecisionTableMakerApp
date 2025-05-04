@@ -43,6 +43,7 @@
                          Text="{Binding FormulaText.Value, Mode=TwoWay,
                         UpdateSourceTrigger=PropertyChanged}"/>
                 <StackPanel>
+                    <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}"/>
                     <TextBlock Text="末尾に追加するテキスト"/>
                     <StackPanel>
                         <ItemsControl ItemsSource="{Binding AdditionalRowSettings}">

@@ -58,5 +58,17 @@ namespace DecisionTableMakerApp.Properties {
                 this["LastAdditionalSettings"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LastIsIgnoreWhiteSpace {
+            get {
+                return ((bool)(this["LastIsIgnoreWhiteSpace"]));
+            }
+            set {
+                this["LastIsIgnoreWhiteSpace"] = value;
+            }
+        }
     }
 }

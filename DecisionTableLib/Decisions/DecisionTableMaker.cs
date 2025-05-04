@@ -14,15 +14,18 @@ namespace DecisionTableLib.Decisions
         private readonly FactorLevelTable _factorLevelTable;
         private readonly bool _evenPlusMode;
         private readonly RPN _rpn;
+        private readonly bool _isIgnoreWhiteSpace;
 
-        public DecisionTableMaker(FactorLevelTable factorLevelTable, PlusMode plusMode = PlusMode.FillEnd)
+        public DecisionTableMaker(
+            FactorLevelTable factorLevelTable,
+            PlusMode plusMode = PlusMode.FillEnd,
+            bool isIgnoreWhiteSpace = true)
         {
             //TODO:深さ3以上は例外にすること
             this._factorLevelTable = factorLevelTable;
             _rpn = new RPN(plusMode);
+            _isIgnoreWhiteSpace = isIgnoreWhiteSpace;
         }
-
-        public static DecisionTableMaker EmptyTableMaker { get => new DecisionTableMaker(FactorLevelTable.EmptyTable, PlusMode.FillEven); }
 
         /// <summary>
         /// 因子水準の計算式から決定表を作成する
@@ -30,7 +33,11 @@ namespace DecisionTableLib.Decisions
         /// <param name="formulaText">因子水準の計算式。具体例) [OS] * [Language] + [Version]</param>
         public DecisionTable CreateFrom(string formulaText)
         {
-            formulaText = RemoveWhiteSpace(formulaText);
+            if (_isIgnoreWhiteSpace)
+            {
+                formulaText = RemoveWhiteSpace(formulaText);
+            }
+
             var tokenList = new Tokenizer().Tokenize(formulaText);//トークンの取り出し
 
             //逆ポーランド記法になったトークン集

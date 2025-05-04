@@ -12,8 +12,6 @@ namespace DecisionTableLib.Decisions
     /// </summary>
     public class FactorLevelTable
     {
-        public static FactorLevelTable EmptyTable { get => new FactorLevelTable(new TreeNode("root")); }
-
         private readonly List<Factor> _table = new ();
 
 

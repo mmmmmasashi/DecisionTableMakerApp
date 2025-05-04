@@ -27,9 +27,10 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
 
         public ReactiveProperty<DataTable> DecisionTable { get; set; } = new ReactiveProperty<DataTable>(new DataTable());
+        public ReactiveProperty<bool> IsIgnoreWhiteSpace { get; }  
 
-        private DecisionTableMaker _decisionTableMaker;
         private string _latestFactorLevelTable;
+        private readonly bool _isInitialized = false;
 
         private void DeleteAdditionalRowSetting(AdditionalRowSetting targetSetting)
         {
@@ -38,12 +39,16 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void AddNewRowSetting(string col1Text, string col2Text)
         {
-            var newRowSetting = new AdditionalRowSetting(DeleteAdditionalRowSetting, UpdateAdditionalSettings, col1Text, col2Text);
+            var newRowSetting = new AdditionalRowSetting(DeleteAdditionalRowSetting, UpdateTable, col1Text, col2Text);
             AdditionalRowSettings.Add(newRowSetting);
         }
 
         public MainWindowViewModel()
         {
+            bool isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
+            IsIgnoreWhiteSpace = new ReactiveProperty<bool>(isIgnoreWhiteSpace);
+            IsIgnoreWhiteSpace.Subscribe(_ => UpdateIgnoreWhiteSpace());
+
             AddAdditionalRowCommand = new ReactiveCommand();
             AddAdditionalRowCommand.Subscribe(_ => AddNewRowSetting("", ""));
 
@@ -58,7 +63,6 @@ namespace DecisionTableMakerApp.ViewModel
             CreateDecisionTableCommand.Subscribe(_ => CreateDecisionTable());
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
-            _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
             FormulaText.Subscribe(text => UpdateTable());
 
             // 前回保存されたテキストを読み込む
@@ -69,6 +73,14 @@ namespace DecisionTableMakerApp.ViewModel
             }
 
             FormulaText.Value = Properties.Settings.Default.LastFormulaText;
+
+            _isInitialized = true;
+        }
+
+        private void UpdateIgnoreWhiteSpace()
+        {
+            SaveAll();
+            UpdateTable();
         }
 
         private void InitializeAdditionalRowSettings()
@@ -87,29 +99,34 @@ namespace DecisionTableMakerApp.ViewModel
             }
         }
 
-        private void UpdateAdditionalSettings()
-        {
-            UpdateTable();
-        }
 
         private void SaveAll()
         {
+            if (!_isInitialized) return;
+
             //保存する
             var str = AdditionalRowSettings.Select(setting => (setting.Col1Text.Value, setting.Col2Text.Value)).ToList();
             Properties.Settings.Default.LastAdditionalSettings = new PropertyList().ToPropertyString(str);
             Properties.Settings.Default.LastFormulaText = FormulaText.Value;
             Properties.Settings.Default.LastFactorLevelText = _latestFactorLevelTable;
+            Properties.Settings.Default.LastIsIgnoreWhiteSpace = IsIgnoreWhiteSpace.Value;
 
             Properties.Settings.Default.Save();
         }
 
         private void UpdateTable()
         {
-            if (_decisionTableMaker == null) return;
+            if (FactorAndLevelTreeItems == null) return;
+            if (FactorAndLevelTreeItems.Count() == 0) return;
+
+            var rootNode = FactorAndLevelTreeItems.FirstOrDefault();
+
+            DecisionTableMaker decisionTableMaker = new DecisionTableMaker(new FactorLevelTable(rootNode), PlusMode.FillEven, IsIgnoreWhiteSpace.Value);
+
             var text = FormulaText.Value;
             try
             {
-                var decisionTable = _decisionTableMaker.CreateFrom(text);
+                var decisionTable = decisionTableMaker.CreateFrom(text);
                 ParsedResultText.Value = decisionTable.ToString();
                 DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable()
                     .FormatToAppView(AdditionalRowSettings);
@@ -161,6 +178,7 @@ namespace DecisionTableMakerApp.ViewModel
             }
 
             LoadFactorLevelTable(text);
+            SaveAll();
         }
 
         private void LoadFactorLevelTable(string text)
@@ -171,16 +189,7 @@ namespace DecisionTableMakerApp.ViewModel
             var rootNode = excelRange.ToTree();
             FactorAndLevelTreeItems.Add(rootNode);
 
-            if (rootNode == null) return;
-            try
-            {
-                _decisionTableMaker = new DecisionTableMaker(new FactorLevelTable(rootNode), PlusMode.FillEven);
-                _latestFactorLevelTable = text;
-            }
-            catch (Exception ex)
-            {
-                _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
-            }
+            _latestFactorLevelTable = text;
         }
     }
 
