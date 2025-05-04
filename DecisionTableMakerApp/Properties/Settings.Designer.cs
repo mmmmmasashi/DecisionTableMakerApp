@@ -37,7 +37,8 @@ namespace DecisionTableMakerApp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("[FactorA(LevelA1,LevelA2,LevelA3)] * [FactorB(LevelB1,LevelB2)] + [FactorC(LevelC" +
+            "1,LevelC2)]")]
         public string LastFormulaText {
             get {
                 return ((string)(this["LastFormulaText"]));

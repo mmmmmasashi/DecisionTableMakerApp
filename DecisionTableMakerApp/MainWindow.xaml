@@ -14,10 +14,11 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TreeView Grid.Row="0" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
+            <Button Grid.Row="0" Content="因子水準表取込" Command="{Binding ImportTableCommand}"/>
+            <TreeView Grid.Row="1" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
                 <TreeView.ItemContainerStyle>
                     <Style TargetType="TreeViewItem">
                         <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
@@ -29,7 +30,6 @@
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
-            <Button Grid.Row="1" Content="因子水準表取込" Command="{Binding ImportTableCommand}"/>
         </Grid>
 
         <Grid Grid.Column="1">
@@ -74,7 +74,6 @@
                 <!--ディシジョンテーブルの見栄えを確認するデータグリッド-->
                 <DataGrid x:Name="DataGrid" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
             </StackPanel>
-            <Button Grid.Row="1" Command="{Binding ImportTableCommand}" Content="Sample"></Button>
         </Grid>
 
     </Grid>
