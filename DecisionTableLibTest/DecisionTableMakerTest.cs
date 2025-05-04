@@ -192,5 +192,32 @@ namespace DecisionTableLibTest
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
         }
 
+        [Fact]
+        public void 三因子_前半に足し算()
+        {
+            //サンプルの計算式
+            List<TestCase> testCases = CreateCasesHelper("[Version] + [Language] * [OS]");
+
+            foreach (var item in testCases)
+            {
+                _output.WriteLine(item.ToString());
+            }
+
+            Assert.Equal(9, testCases.Count);
+            //因子を指定すると水準がとれる
+            int i = 0;
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Japanese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Japanese", "2.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "2.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Chinese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Chinese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
+        }
+
     }
 }
