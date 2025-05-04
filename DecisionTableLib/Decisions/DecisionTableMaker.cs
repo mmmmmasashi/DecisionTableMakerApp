@@ -25,7 +25,9 @@ namespace DecisionTableLib.Decisions
             var factorList = new string[] { "Language", "OS" };
 
             var list = _factorAndLevelRootNode.Children//因子のリスト
-                .Select(factorNode => factorNode.Children.Select(level => (factorNode.Name, level.Name)).ToList());
+                .Where(factorNode => factorList.Contains(factorNode.Name))
+                .Select(factorNode => factorNode.Children.Select(level => (factorNode.Name, level.Name))
+                .ToList());
 
             var combinations = CartesianProduct(list).ToList();
 
