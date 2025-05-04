@@ -8,24 +8,6 @@ namespace DecisionTableLib.FormulaAnalyzer
 {
     internal class Filler
     {
-        /// <summary>
-        /// 指定されたリストを、目標とする要素数に合わせて埋める
-        /// </summary>
-        internal List<T> Fill<T>(List<T> list, int targetCount, PlusMode plusMode)
-        {
-            if (targetCount <= list.Count) return list;
-
-            switch (plusMode)
-            {
-                case PlusMode.FillEnd:
-                    return FillEnd(list, targetCount);
-                case PlusMode.FillEven:
-                    return FillEven(list, targetCount);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(plusMode), plusMode, null);
-            }
-        }
-
 
         /// <summary>
         /// listの要素数が、targetCountで指定された数になるように、要素を複製して埋める。
@@ -74,5 +56,50 @@ namespace DecisionTableLib.FormulaAnalyzer
 
             return newList;
         }
+
+
+        /// <summary>
+        /// 要素数が少ない方を埋める
+        /// </summary>
+        internal (List<List<(string, string)>> left, List<List<(string, string)>> right) Fill(List<List<(string, string)>> left, List<List<(string, string)>> right, PlusMode plusMode)
+        {
+            //少ない方を埋める
+
+            if (right.Count > left.Count)
+            {
+                left = Fill(left, right.Count, plusMode);
+            }
+            else if (left.Count > right.Count)
+            {
+                right = Fill(right, left.Count, plusMode);
+            }
+            else
+            {
+                //同じ数のときは、何もしない
+            }
+            return (left, right);
+        }
+
+        /// <summary>
+        /// 指定されたリストを、目標とする要素数に合わせて埋める
+        /// </summary>
+        /// <remarks>
+        /// FIXME : private化するべき
+        /// </remarks>
+        internal List<T> Fill<T>(List<T> list, int targetCount, PlusMode plusMode)
+        {
+            if (targetCount <= list.Count) return list;
+
+            switch (plusMode)
+            {
+                case PlusMode.FillEnd:
+                    return FillEnd(list, targetCount);
+                case PlusMode.FillEven:
+                    return FillEven(list, targetCount);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(plusMode), plusMode, null);
+            }
+        }
+
     }
 }

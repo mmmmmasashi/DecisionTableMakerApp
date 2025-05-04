@@ -61,28 +61,17 @@ namespace DecisionTableLib.FormulaAnalyzer
                 {
                     //足し算とは、ケース数が大きい方のケース集合に、
                     //ケース数が少ない方のケース集合を溶け込ませること
-                    //改善メモ:
-                    //ただ、たとえば5ケースに2(x or y)ケースを足す場合、
-                    //xyyyyとなるとイマイチ。
-                    //xxyyyのように、半々ぐらいにしたい
+                    
                     var right = stack.Pop();
                     var left = stack.Pop();
 
-                    if (right.Count > left.Count)
-                    {
-                        //右の方が多い場合、右を左に
-                        var temp = right;
-                        right = left;
-                        left = temp;
-                    }
                     //以下は左の方が多い前提
                     //左のケース集合に、右のケース集合を溶け込ませる
                     //例) 左 [[("OS", "Windows")], [("OS", "Mac")], [("OS", "Linux")]]
                     //右 [[("Language", "Japanese")], [("Language", "English")]]のとき
                     //[[("OS", "Windows"), ("Language", "Japanese")], [("OS", "Mac"), ("Language", "Japanese")], [("OS", "Linux"), ("Language", "English")],
 
-                    //数を合わせる
-                    right = new Filler().Fill(right, left.Count, _plusMode);
+                    (left, right) = new Filler().Fill(left, right, _plusMode);
 
                     var product = new List<List<(string, string)>>();
                     for (int i = 0; i < left.Count; i++)
