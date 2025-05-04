@@ -19,5 +19,15 @@ namespace DecisionTableLib.Decisions
         {
             throw new NotImplementedException();
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var testCase in TestCases)
+            {
+                sb.AppendLine(testCase.ToString());
+            }
+            return sb.ToString().TrimEnd('\n', '\r'); // 最後の改行を削除
+        }
     }
 }

@@ -21,6 +21,8 @@ namespace DecisionTableLib.Decisions
             _rpn = new RPN(plusMode);
         }
 
+        public static DecisionTableMaker EmptyTableMaker { get => new DecisionTableMaker(FactorLevelTable.EmptyTable, PlusMode.FillEven); }
+
         /// <summary>
         /// 因子水準の計算式から決定表を作成する
         /// </summary>

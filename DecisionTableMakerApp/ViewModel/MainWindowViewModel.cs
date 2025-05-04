@@ -1,5 +1,6 @@
 ﻿using DecisionTableLib.Decisions;
 using DecisionTableLib.Excel;
+using DecisionTableLib.FormulaAnalyzer;
 using DecisionTableLib.Trees;
 using Reactive.Bindings;
 using System;
@@ -15,17 +16,14 @@ namespace DecisionTableMakerApp.ViewModel
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
         public ReactiveCommand ImportTableCommand { get; }
         public ReactiveCommand CreateDecisionTableCommand { get; }
-        public ReactiveCommand FormulaChangedCommand { get; }
 
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
+        public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
+
+        private DecisionTableMaker _decisionTableMaker;
 
         public MainWindowViewModel()
         {
-            FormulaChangedCommand = new ReactiveCommand();
-            FormulaChangedCommand.Subscribe(_ =>
-            {
-                Trace.WriteLine($"FormulaText: {FormulaText.Value}");
-            });
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ExecuteSampleCommand());
 
@@ -33,7 +31,20 @@ namespace DecisionTableMakerApp.ViewModel
             CreateDecisionTableCommand.Subscribe(_ => CreateDecisionTable());
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
-
+            _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
+            FormulaText.Subscribe(text =>
+            {
+                try
+                {
+                    var decisionTable = _decisionTableMaker.CreateFrom(text);
+                    ParsedResultText.Value = decisionTable.ToString();
+                }
+                catch (Exception ex)
+                {
+                    //以上な文字列を入力した場合は、解析エラーであることだけ通知
+                    ParsedResultText.Value = "解析エラー" + Environment.NewLine + ex.Message;
+                }
+            });
         }
 
         private void CreateDecisionTable()
@@ -80,7 +91,19 @@ namespace DecisionTableMakerApp.ViewModel
             var excelRange = new ExcelRange(text);
 
             FactorAndLevelTreeItems.Clear();
-            FactorAndLevelTreeItems.Add(excelRange.ToTree());
+            var rootNode = excelRange.ToTree();
+            FactorAndLevelTreeItems.Add(rootNode);
+
+            if (rootNode == null) return;
+            try
+            {
+                _decisionTableMaker = new DecisionTableMaker(new FactorLevelTable(rootNode), PlusMode.FillEven);
+            }
+            catch(Exception ex)
+            {
+                _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
+            }
+            
         }
     }
 }

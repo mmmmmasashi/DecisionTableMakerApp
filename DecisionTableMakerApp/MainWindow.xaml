@@ -33,19 +33,18 @@
         </Grid>
 
         <Grid Grid.Column="1">
-            <StackPanel>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0">
                 <TextBlock Text="計算式"/>
-                <TextBox Name="formulaTextBox" Height="48" Text="{Binding FormulaText.Value, Mode=OneWayToSource}">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="TextChanged">
-                            <i:InvokeCommandAction Command="{Binding FormulaChangedCommand}" CommandParameter="{Binding Text, ElementName=formulaTextBox}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
+                <TextBox Name="formulaTextBox" Height="48" Text="{Binding FormulaText.Value, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}">
                 </TextBox>
                 <TextBlock Text="構文解析結果"/>
                 <TextBlock Text="{Binding ParsedResultText.Value}"/>
-                <Button Grid.Column="1" Command="{Binding ImportTableCommand}" Width="100" Height="48" Content="Sample"></Button>
             </StackPanel>
+            <Button Grid.Row="1" Command="{Binding ImportTableCommand}" Content="Sample"></Button>
         </Grid>
 
     </Grid>
