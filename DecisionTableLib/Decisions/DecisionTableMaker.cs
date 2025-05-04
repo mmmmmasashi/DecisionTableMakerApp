@@ -1,4 +1,5 @@
-﻿using DecisionTableLib.Trees;
+﻿using DecisionTableLib.FormulaAnalyzer;
+using DecisionTableLib.Trees;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +18,14 @@ namespace DecisionTableLib.Decisions
             this._factorLevelTable = factorLevelTable;
         }
 
+        /// <summary>
+        /// 因子水準の計算式から決定表を作成する
+        /// </summary>
+        /// <param name="formulaText">因子水準の計算式。具体例) [OS] * [Language] + [Version]</param>
         public DecisionTable CreateFrom(string formulaText)
         {
-            //TODO:string解析は後回し
-            //Language * OSだと分かったとして
-
-            var factorList = new string[] { "OS", "Language", "Version" };
+            var tokenList = new Tokenizer().Tokenize(formulaText);
+            var factorList = tokenList.ToArray();
 
             var list = _factorLevelTable.Factors
                 .Where(factor => factorList.Contains(factor.Name))
