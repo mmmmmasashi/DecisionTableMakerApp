@@ -42,7 +42,7 @@ namespace DecisionTableMakerApp.ViewModel
                 {
                     var decisionTable = _decisionTableMaker.CreateFrom(text);
                     ParsedResultText.Value = decisionTable.ToString();
-                    DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable();
+                    DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable().IncludeColumnNameToCell();
                 }
                 catch (Exception ex)
                 {
@@ -125,6 +125,40 @@ namespace DecisionTableMakerApp.ViewModel
             {
                 _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
             }
+        }
+    }
+
+    public static class DataTableExtension
+    {
+        /// <summary>
+        /// 列名を1行目に埋め込む。元々の1行目以降は2行目以降に移動する。
+        /// </summary>
+        public static DataTable IncludeColumnNameToCell(this DataTable originalTable)
+        {
+            // 新しいDataTable（列名もデータとして含めたい）
+            DataTable withHeaderAsData = new DataTable();
+
+            // 列構造を同じにする
+            foreach (DataColumn col in originalTable.Columns)
+            {
+                withHeaderAsData.Columns.Add(col.ColumnName);
+            }
+
+            // 列名を1行目のデータとして追加
+            DataRow headerRow = withHeaderAsData.NewRow();
+            for (int i = 0; i < originalTable.Columns.Count; i++)
+            {
+                headerRow[i] = originalTable.Columns[i].ColumnName;
+            }
+            withHeaderAsData.Rows.Add(headerRow);
+
+            // 元のデータも追加
+            foreach (DataRow row in originalTable.Rows)
+            {
+                withHeaderAsData.Rows.Add(row.ItemArray);
+            }
+
+            return withHeaderAsData;
         }
     }
 }

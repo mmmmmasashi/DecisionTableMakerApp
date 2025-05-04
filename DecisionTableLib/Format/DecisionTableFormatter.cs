@@ -13,6 +13,10 @@ namespace DecisionTableLib.Format
     /// </summary>
     public class DecisionTableFormatter
     {
+        //定数
+        private const string FactorColmnName = "因子";
+        private const string LevelColmnName = "水準";
+
         private DecisionTable decisionTable;
 
         public DecisionTableFormatter(DecisionTable decisionTable)
@@ -26,8 +30,8 @@ namespace DecisionTableLib.Format
 
             //TODO:埋め込みになっている
             //列名定義
-            table.Columns.Add("因子", typeof(string));
-            table.Columns.Add("水準", typeof(string));
+            table.Columns.Add(FactorColmnName, typeof(string));
+            table.Columns.Add(LevelColmnName, typeof(string));
 
             //テストケースは後回し
             //因子と水準を1,2列目に埋める
@@ -78,7 +82,7 @@ namespace DecisionTableLib.Format
             for (int i = rowIdxStart; i < dataTable.Rows.Count; i++)
             {
                 var row = dataTable.Rows[i];
-                if (row["水準"].ToString() == targetLevelName)
+                if (row[LevelColmnName].ToString() == targetLevelName)
                 {
                     return i;
                 }
@@ -94,7 +98,7 @@ namespace DecisionTableLib.Format
             for (int i = 0; i < dataTable.Rows.Count; i++)
             {
                 var row = dataTable.Rows[i];
-                if (row["因子"].ToString() == factorName)
+                if (row[FactorColmnName].ToString() == factorName)
                 {
                     return i;
                 }
@@ -116,8 +120,8 @@ namespace DecisionTableLib.Format
                 //1行目
                 //因子名を追加
                 var row = table.NewRow();
-                row["因子"] = factor.Name;
-                row["水準"] = factor.Levels.FirstOrDefault()?.Name;
+                row[FactorColmnName] = factor.Name;
+                row[LevelColmnName] = factor.Levels.FirstOrDefault()?.Name;
                 table.Rows.Add(row);
 
                 //水準を追加. これは因子は空欄
@@ -127,8 +131,8 @@ namespace DecisionTableLib.Format
                     //水準名を追加
                     //因子名は空欄
                     var levelRow = table.NewRow();
-                    levelRow["因子"] = "";
-                    levelRow["水準"] = level.Name;
+                    levelRow[FactorColmnName] = "";
+                    levelRow[LevelColmnName] = level.Name;
                     table.Rows.Add(levelRow);
                 }
             }
