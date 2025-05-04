@@ -27,7 +27,7 @@ namespace DecisionTableLib.Decisions
             var tokenList = new Tokenizer().Tokenize(formulaText);
             var factorList = tokenList.ToArray();
 
-            var list = _factorLevelTable.Factors
+            List<IEnumerable<(string, string)>> list = _factorLevelTable.Factors
                 .Where(factor => factorList.Contains(factor.Name))
                 .OrderBy(factor => Array.IndexOf(factorList, factor.Name))
                 .Select(factor => factor.Levels.Select(level => (factor.Name, level)))
@@ -39,7 +39,11 @@ namespace DecisionTableLib.Decisions
             // (Version, 1.0), (Version, 2.0)
 
             //直積をとる
-            var combinations = CartesianProduct(list).ToList();
+            var combinations = list[0].Select(pair => new List<(string, string)>() { pair }).Cartesian(list[1]).ToList();
+            if (list.Count > 2)
+            {
+                combinations = combinations.Cartesian(list[2]).ToList();
+            }
             //この時点で以下の状態
             //(OS, Windows), (Language, Japanese)
             //(OS, Windows), (Language, English)
@@ -49,16 +53,46 @@ namespace DecisionTableLib.Decisions
         }
 
         // 汎用的な直積生成メソッド
-        static IEnumerable<IEnumerable<T>> CartesianProduct<T>(IEnumerable<IEnumerable<T>> sequences)
-        {
-            IEnumerable<IEnumerable<T>> result = new[] { Enumerable.Empty<T>() };
+        //static IEnumerable<IEnumerable<T>> CartesianProduct<T>(IEnumerable<IEnumerable<T>> sequences)
+        //{
+        //    IEnumerable<IEnumerable<T>> result = new[] { Enumerable.Empty<T>() };
 
-            foreach (var sequence in sequences)
+        //    foreach (var sequence in sequences)
+        //    {
+        //        result = result.SelectMany(
+        //            acc => sequence,
+        //            (acc, item) => acc.Append(item)
+        //        );
+        //    }
+
+        //    return result;
+        //}
+
+
+    }
+
+    public static class CartesianProductExtensions
+    {
+        /// <summary>
+        /// すでにある因子の集合体に、新しい因子を掛け合わせる(直積)
+        /// </summary>
+        public static List<List<(string, string)>> Cartesian
+            (this IEnumerable<List<(string, string)>> combinationList, IEnumerable<(string, string)> newFactorAndLevels)
+        {
+            var result = new List<List<(string, string)>>();
+
+            foreach (var combination in combinationList)
             {
-                result = result.SelectMany(
-                    acc => sequence,
-                    (acc, item) => acc.Append(item)
-                );
+                //combination : (OS, Windows), (Language, Japanese)
+                foreach (var factorAndLevel in newFactorAndLevels)
+                {
+                    var newCombination = new List<(string, string)>();
+                    newCombination.AddRange(combination);
+
+                    //combination : (OS, Windows), (Language, Japanese), (Version, 1.0)
+                    newCombination.Add(factorAndLevel);
+                    result.Add(newCombination);
+                }
             }
 
             return result;
