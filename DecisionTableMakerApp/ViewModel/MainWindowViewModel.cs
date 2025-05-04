@@ -52,7 +52,7 @@ namespace DecisionTableMakerApp.ViewModel
             AdditionalRowSettings.CollectionChanged += (sender, args) => UpdateTable();
 
             ImportTableCommand = new ReactiveCommand();
-            ImportTableCommand.Subscribe(_ => ExecuteSampleCommand());
+            ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
 
             CreateDecisionTableCommand = new ReactiveCommand();
             CreateDecisionTableCommand.Subscribe(_ => CreateDecisionTable());
@@ -145,7 +145,7 @@ namespace DecisionTableMakerApp.ViewModel
             MessageBox.Show("決定表を作成しました。クリップボードにコピーしています", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ExecuteSampleCommand()
+        private void ImportFactorAndLevelTableData()
         {
             var text = Clipboard.GetText();
             if (string.IsNullOrEmpty(text))
