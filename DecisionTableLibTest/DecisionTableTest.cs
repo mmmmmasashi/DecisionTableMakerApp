@@ -7,14 +7,51 @@ using Xunit;
 using DecisionTableLib.Decisions;
 using System.Data;
 using DecisionTableLib.Format;
+using System.Diagnostics.Metrics;
 
 namespace DecisionTableLibTest
 {
-    public class DecisionTableTest
+    public class DecisionTableTest_3因子
     {
         private readonly DecisionTable decisionTable;
 
-        public DecisionTableTest()
+        public DecisionTableTest_3因子()
+        {
+            var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
+            var maker = new DecisionTableMaker(因子水準表サンプル);
+            decisionTable = maker.CreateFrom("[OS] * [Language] * [Version]");
+        }
+
+        [Fact]
+        public void DecisionTableはDataTableに変換できる_因子水準部分をテスト()
+        {
+            var formatter = new DecisionTableFormatter(decisionTable);
+            DataTable dataTable = formatter.ToDataTable();
+
+            Assert.Equal("因子", dataTable.Columns[0].ColumnName);
+            Assert.Equal("水準", dataTable.Columns[1].ColumnName);
+
+            // 行の検証を共通メソッドで行う
+            int i = 0;
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "OS", "Windows");
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "", "Mac");
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "", "Linux");
+
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "Language", "Japanese");
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "", "English");
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "", "Chinese");
+
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "Version", "1.0");
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "", "2.0");
+        }
+
+    }
+
+    public class DecisionTableTest_2因子
+    {
+        private readonly DecisionTable decisionTable;
+
+        public DecisionTableTest_2因子()
         {
             decisionTable = new DecisionTable(new List<TestCase>
             {
@@ -24,7 +61,6 @@ namespace DecisionTableLibTest
                 new TestCase(new List<(string, string)>() {("OS", "Mac"), ("Language", "English")}),
             });
         }
-
 
         [Fact]
         public void DecisionTableは因子と水準が分かる()
@@ -52,7 +88,27 @@ namespace DecisionTableLibTest
             Assert.Equal("因子", dataTable.Columns[0].ColumnName);
             Assert.Equal("水準", dataTable.Columns[1].ColumnName);
 
+            // 行の検証を共通メソッドで行う
+            int i = 0;
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "OS", "Windows");
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "", "Mac");
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "Language", "Japanese");
+            TableFormatHelper.AssertDataTableRow(dataTable, i++, "", "English");
+        }
 
+
+    }
+
+    internal static class TableFormatHelper
+    {
+        /// <summary>
+        /// 因子と水準の値を確認する
+        /// </summary>
+        internal static void AssertDataTableRow(
+             DataTable table, int rowIndex, string expectedFactor, string expectedLevel)
+        {
+            Assert.Equal(expectedFactor, table.Rows[rowIndex]["因子"]);
+            Assert.Equal(expectedLevel, table.Rows[rowIndex]["水準"]);
         }
     }
 }
