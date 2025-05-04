@@ -1,10 +1,12 @@
 ﻿using DecisionTableLib.Decisions;
 using DecisionTableLib.Excel;
+using DecisionTableLib.Format;
 using DecisionTableLib.FormulaAnalyzer;
 using DecisionTableLib.Trees;
 using Reactive.Bindings;
 using System;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Windows;
@@ -19,6 +21,8 @@ namespace DecisionTableMakerApp.ViewModel
 
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
+
+        public ReactiveProperty<DataTable> DecisionTable { get; set; } = new ReactiveProperty<DataTable>(new DataTable());
 
         private DecisionTableMaker _decisionTableMaker;
 
@@ -38,10 +42,11 @@ namespace DecisionTableMakerApp.ViewModel
                 {
                     var decisionTable = _decisionTableMaker.CreateFrom(text);
                     ParsedResultText.Value = decisionTable.ToString();
+                    DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable();
                 }
                 catch (Exception ex)
                 {
-                    //以上な文字列を入力した場合は、解析エラーであることだけ通知
+                    //異常な文字列を入力した場合は、解析エラーであることだけ通知
                     ParsedResultText.Value = "解析エラー" + Environment.NewLine + ex.Message;
                 }
             });

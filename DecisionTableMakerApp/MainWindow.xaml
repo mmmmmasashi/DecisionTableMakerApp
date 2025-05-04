@@ -51,9 +51,7 @@
                 </RichTextBox>
                 <TextBlock Text="ディシジョンテーブル"/>
                 <!--ディシジョンテーブルの見栄えを確認するデータグリッド-->
-                <DataGrid>
-                    
-                </DataGrid>
+                <DataGrid x:Name="DataGrid" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
             </StackPanel>
             <Button Grid.Row="1" Command="{Binding ImportTableCommand}" Content="Sample"></Button>
         </Grid>
