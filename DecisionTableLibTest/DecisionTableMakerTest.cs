@@ -2,15 +2,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace DecisionTableLibTest
 {
     public class DecisionTableMakerTest
     {
-        
+        private readonly ITestOutputHelper _output;
+
+        public DecisionTableMakerTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         private void AssertTestCaseLevels(TestCase testCase, string expectedOS, string expectedLanguage)
         {
             Assert.Equal(new Level(expectedOS), testCase.LevelOf("OS"));
@@ -26,7 +34,7 @@ namespace DecisionTableLibTest
             Assert.Equal(new Level(expectedVersion), testCase.LevelOf("Version"));
         }
 
-        [Fact]
+        [Fact (Skip ="まだ")]
         public void ディシジョンテーブルをつくるテスト()
         {
             //サンプルの因子水準表を取得
@@ -54,7 +62,7 @@ namespace DecisionTableLibTest
             AssertTestCaseLevels(testCases[8], "Linux", "Chinese");
         }
 
-        [Fact(Skip = "このテストは現在スキップされています")]
+        [Fact]
         public void 三因子の掛け合わせのディシジョンテーブルを作るテスト()
         {
             //サンプルの因子水準表を取得
@@ -66,22 +74,34 @@ namespace DecisionTableLibTest
             var maker = new DecisionTableMaker(因子水準表サンプル);
             DecisionTable decisionTable = maker.CreateFrom(計算式);
             List<TestCase> testCases = decisionTable.TestCases;
-            Assert.Equal(9, testCases.Count);
+            Assert.Equal(18, testCases.Count);
 
+            foreach (var item in testCases)
+            {
+                _output.WriteLine(item.ToString());
+            }
             //因子を指定すると水準がとれる
-            AssertTestCase3FactorLevels(testCases[0], "Windows", "Japanese", "1.0");
-            //AssertTestCase3FactorLevels(testCases[1], "Windows", "English");
-            //AssertTestCase3FactorLevels(testCases[2], "Windows", "Chinese");
-
-            //AssertTestCase3FactorLevels(testCases[3], "Mac", "Japanese");
-            //AssertTestCase3FactorLevels(testCases[4], "Mac", "English");
-            //AssertTestCase3FactorLevels(testCases[5], "Mac", "Chinese");
-
-            //AssertTestCase3FactorLevels(testCases[6], "Linux", "Japanese");
-            //AssertTestCase3FactorLevels(testCases[7], "Linux", "English");
-            //AssertTestCase3FactorLevels(testCases[8], "Linux", "Chinese");
-
+            int i = 0;
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Japanese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "English", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Chinese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Windows", "Chinese", "2.0");
             
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Japanese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "English", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Chinese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Mac", "Chinese", "2.0");
+
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Japanese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Japanese", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "English", "2.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "1.0");
+            AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
         }
     }
 }

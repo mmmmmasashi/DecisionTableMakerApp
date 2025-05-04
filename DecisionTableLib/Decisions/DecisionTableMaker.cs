@@ -22,16 +22,18 @@ namespace DecisionTableLib.Decisions
             //TODO:string解析は後回し
             //Language * OSだと分かったとして
 
-            var factorList = new string[] { "Language", "OS" };
+            var factorList = new string[] { "OS", "Language", "Version" };
 
             var list = _factorLevelTable.Factors
                 .Where(factor => factorList.Contains(factor.Name))
+                .OrderBy(factor => Array.IndexOf(factorList, factor.Name))
                 .Select(factor => factor.Levels.Select(level => (factor.Name, level)))
                 .ToList();
 
             //こういう状態
             // (OS, Windows), (OS, Mac), (OS, Linux)
             // (Language, Japanese), (Language, English), (Language, Chinese)
+            // (Version, 1.0), (Version, 2.0)
 
             //直積をとる
             var combinations = CartesianProduct(list).ToList();

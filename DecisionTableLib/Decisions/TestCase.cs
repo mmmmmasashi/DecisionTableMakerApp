@@ -27,5 +27,15 @@ namespace DecisionTableLib.Decisions
             }
             return new Level(_factorLevelPairs[factorKey]);
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var pair in _factorLevelPairs)
+            {
+                sb.Append($"{pair.Key}: {pair.Value}, ");
+            }
+            return sb.ToString().TrimEnd(',', ' '); // 最後のカンマとスペースを削除
+        }
     }
 }
