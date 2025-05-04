@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace DecisionTableLib.Decisions
 {
+    /// <summary>
+    /// 因子水準表
+    /// </summary>
     public class FactorLevelTable
     {
         public static FactorLevelTable EmptyTable { get => new FactorLevelTable(new TreeNode("root")); }
@@ -19,7 +22,7 @@ namespace DecisionTableLib.Decisions
             var factorNodes = root.Children;
             foreach (var factorNode in factorNodes)
             {
-                var levels = factorNode.Children.Select(level => level.Name).ToList();
+                var levels = factorNode.Children.Select(level => new Level(level.Name)).ToList();
                 _table.Add(new Factor(factorNode.Name, levels));
             }
         }

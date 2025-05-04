@@ -19,6 +19,8 @@ namespace DecisionTableLib.Decisions
             }
         }
 
+        public IEnumerable<string> FactorNames { get => _factorLevelPairs.Keys; }
+
         public Level LevelOf(string factorKey)
         {
             if (_factorLevelPairs.ContainsKey(factorKey) == false)
@@ -36,6 +38,11 @@ namespace DecisionTableLib.Decisions
                 sb.Append($"{pair.Key}: {pair.Value}, ");
             }
             return sb.ToString().TrimEnd(',', ' '); // 最後のカンマとスペースを削除
+        }
+
+        internal bool HasFactorOf(string factorName)
+        {
+            return _factorLevelPairs.ContainsKey(factorName);
         }
     }
 }

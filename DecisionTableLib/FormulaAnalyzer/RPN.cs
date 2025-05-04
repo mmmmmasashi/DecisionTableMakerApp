@@ -100,7 +100,7 @@ namespace DecisionTableLib.FormulaAnalyzer
                     //水準をテストケースのリストにする( [ [("OS", "Windows")], [("OS", "Mac")], [("OS", "Linux")] ] )
                     var targetFactor = factors.First(f => f.Name == token);
                     var values = targetFactor.Levels
-                        .Select(level => new List<(string, string)>() { (targetFactor.Name, level) } )
+                        .Select(level => new List<(string, string)>() { (targetFactor.Name, level.Name) } )
                         .ToList();
 
                     //スタックに積む

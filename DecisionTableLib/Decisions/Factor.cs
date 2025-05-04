@@ -9,8 +9,8 @@ namespace DecisionTableLib.Decisions
     public class Factor
     {
         public string Name { get; }
-        public List<string> Levels { get; }
-        public Factor(string name, List<string> levels)
+        public List<Level> Levels { get; }
+        public Factor(string name, List<Level> levels)
         {
             Name = name;
             Levels = levels;
