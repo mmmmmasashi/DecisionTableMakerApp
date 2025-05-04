@@ -42,7 +42,8 @@ namespace DecisionTableMakerApp.ViewModel
             var text = Clipboard.GetText();
             var factorAndLevelRootNode = FactorAndLevelTreeItems.First();
 
-            var maker = new DecisionTableMaker(factorAndLevelRootNode);
+            var factorLevelTable = new FactorLevelTable(factorAndLevelRootNode);
+            var maker = new DecisionTableMaker(factorLevelTable);
             DecisionTable decisionTable = maker.CreateFrom(FormulaText.Value);
 
             string tsvDesitionTable = decisionTable.ToTsv();

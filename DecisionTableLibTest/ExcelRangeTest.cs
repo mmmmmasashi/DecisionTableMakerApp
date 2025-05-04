@@ -1,3 +1,4 @@
+using DecisionTableLib.Decisions;
 using DecisionTableLib.Excel;
 using DecisionTableLib.Trees;
 
@@ -45,7 +46,7 @@ namespace DecisionTableLibTest
             return rootNode;
         }
 
-        public static TreeNode 三因子水準表を作成()
+        public static FactorLevelTable 三因子水準表を作成()
         {
             string sampleText = "OS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese\r\nVersion\t1.0\r\n\t2.0";
 
@@ -65,7 +66,7 @@ namespace DecisionTableLibTest
 
             var range = new ExcelRange(sampleText);
             TreeNode rootNode = range.ToTree();
-            return rootNode;
+            return new FactorLevelTable(rootNode);
         }
     }
 }

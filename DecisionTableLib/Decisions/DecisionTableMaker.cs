@@ -9,12 +9,12 @@ namespace DecisionTableLib.Decisions
 {
     public class DecisionTableMaker
     {
-        private TreeNode _factorAndLevelRootNode;
+        private readonly FactorLevelTable _factorLevelTable;
 
-        public DecisionTableMaker(TreeNode factorAndLevelRootNode)
+        public DecisionTableMaker(FactorLevelTable factorLevelTable)
         {
             //TODO:深さ3以上は例外にすること
-            this._factorAndLevelRootNode = factorAndLevelRootNode;
+            this._factorLevelTable = factorLevelTable;
         }
 
         public DecisionTable CreateFrom(string formulaText)
@@ -24,13 +24,21 @@ namespace DecisionTableLib.Decisions
 
             var factorList = new string[] { "Language", "OS" };
 
-            var list = _factorAndLevelRootNode.Children//因子のリスト
-                .Where(factorNode => factorList.Contains(factorNode.Name))
-                .Select(factorNode => factorNode.Children.Select(level => (factorNode.Name, level.Name))
-                .ToList());
+            var list = _factorLevelTable.Factors
+                .Where(factor => factorList.Contains(factor.Name))
+                .Select(factor => factor.Levels.Select(level => (factor.Name, level)))
+                .ToList();
 
+            //こういう状態
+            // (OS, Windows), (OS, Mac), (OS, Linux)
+            // (Language, Japanese), (Language, English), (Language, Chinese)
+
+            //直積をとる
             var combinations = CartesianProduct(list).ToList();
-
+            //この時点で以下の状態
+            //(OS, Windows), (Language, Japanese)
+            //(OS, Windows), (Language, English)
+            //:
             var testCases = combinations.Select(factorLevelCombination => new TestCase(factorLevelCombination));
             return new DecisionTable(testCases);
         }
