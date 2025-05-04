@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DecisionTableLib.Decisions
@@ -29,7 +30,7 @@ namespace DecisionTableLib.Decisions
         /// <param name="formulaText">因子水準の計算式。具体例) [OS] * [Language] + [Version]</param>
         public DecisionTable CreateFrom(string formulaText)
         {
-            formulaText = formulaText.Replace(" ", "");
+            formulaText = RemoveWhiteSpace(formulaText);
             var tokenList = new Tokenizer().Tokenize(formulaText);//トークンの取り出し
 
             //逆ポーランド記法になったトークン集
@@ -52,7 +53,10 @@ namespace DecisionTableLib.Decisions
             return new DecisionTable(testCases);
         }
 
-
+        private string RemoveWhiteSpace(string formulaText)
+        {
+            return Regex.Replace(formulaText, @"\s+", "");
+        }
     }
 
     public static class CartesianProductExtensions

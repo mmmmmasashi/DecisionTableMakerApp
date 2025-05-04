@@ -135,7 +135,7 @@ namespace DecisionTableLibTest
         [InlineData("[OS] * [Language(Japanese,English)] * [Version]")]
         [InlineData("[OS] * [Language(Japanese ,English)] * [Version]")]
         [InlineData("[OS] * [Language (Japanese ,English)] * [Version]")]
-        [InlineData("[ OS] * [Language (Japanese ,English)] * [   Version]")]
+        [InlineData("[ OS] * [　Language (Japanese ,English)] * [   Version]")]
 
         public void 三因子の掛け合わせ_独自水準で限定_ディシジョンテーブルを作るテスト_半角スペースは無意味(string formula)
         {
