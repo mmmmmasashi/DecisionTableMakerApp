@@ -24,6 +24,7 @@ namespace DecisionTableLib.Format
         {
             var table = new DataTable();
 
+            //TODO:埋め込みになっている
             //列名定義
             table.Columns.Add("因子", typeof(string));
             table.Columns.Add("水準", typeof(string));
@@ -33,21 +34,72 @@ namespace DecisionTableLib.Format
             var factors = decisionTable.Factors;
             AddFactorAndLevelToDataTable(table, factors);
 
-            //DataRow row = table.NewRow();
-            //row["因子"] = "OS";
-            //row["水準"] = "Windows";
-            //table.Rows.Add(row);
-
-
-            //var countOfCase = decisionTable.Factors.Count;
-            //for (int i = 0; i < countOfCase; i++)
-            //{
-            //    table.Columns.Add($"{i + 1}", typeof(string));
-            //}
-
-
+            //テストケース単位で列を追加
+            AddTestCasesToDataTable(table, decisionTable);
 
             return table;
+        }
+
+        /// <summary>
+        /// テストケース集をDataTableに追加する。列を1つずつ足していく。
+        /// </summary>
+        private void AddTestCasesToDataTable(DataTable dataTable, DecisionTable decisionTable)
+        {
+            int caseNumber = 1;
+            var testCases = decisionTable.TestCases;
+
+            //水準名が別の因子の水準と重複したケースは考慮する必要がある
+            //そのため、まず因子名のIndexを先に探し、その後水準名を探す
+            foreach (var testCase in testCases)
+            {
+                //テストケースごとに列を追加
+                dataTable.Columns.Add(caseNumber++.ToString(), typeof(string));
+
+                //テストケースの水準に点を打つ
+                const string Dot = "x";
+                foreach (var factorName in testCase.FactorNames)
+                {
+                    int rowIdxOfTargetFactor = SearchRowIndexByFactorName(dataTable, factorName);
+                    var targetLevelName = testCase.LevelOf(factorName).Name;
+                    int rowIdxOfTargetLevel = SearchRowIndexByLevelName(dataTable, rowIdxOfTargetFactor, targetLevelName);
+
+                    int lastColIdx = dataTable.Columns.Count - 1;
+                    dataTable.Rows[rowIdxOfTargetLevel][lastColIdx] = Dot;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 因子名を元にDataTableの行Indexを探す
+        /// ただし、rowIdxStart以降の行を探す
+        /// </summary>
+        private int SearchRowIndexByLevelName(DataTable dataTable, int rowIdxStart, string targetLevelName)
+        {
+            for (int i = rowIdxStart; i < dataTable.Rows.Count; i++)
+            {
+                var row = dataTable.Rows[i];
+                if (row["水準"].ToString() == targetLevelName)
+                {
+                    return i;
+                }
+            }
+            throw new Exception($"水準名 {targetLevelName} が見つかりませんでした");
+        }
+
+        /// <summary>
+        /// 因子名を元にDataTableの行Indexを探す
+        /// </summary>
+        private int SearchRowIndexByFactorName(DataTable dataTable, string factorName)
+        {
+            for (int i = 0; i < dataTable.Rows.Count; i++)
+            {
+                var row = dataTable.Rows[i];
+                if (row["因子"].ToString() == factorName)
+                {
+                    return i;
+                }
+            }
+            throw new Exception($"因子名 {factorName} が見つかりませんでした");
         }
 
         private void AddFactorAndLevelToDataTable(DataTable table, List<Factor> factors)

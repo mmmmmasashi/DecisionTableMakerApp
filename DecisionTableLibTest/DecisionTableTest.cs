@@ -14,22 +14,23 @@ namespace DecisionTableLibTest
     public class DecisionTableTest_3因子
     {
         private readonly DecisionTable decisionTable;
+        private readonly DataTable dataTable;
 
         public DecisionTableTest_3因子()
         {
             var 因子水準表サンプル = ExcelRangeTest.三因子水準表を作成();
             var maker = new DecisionTableMaker(因子水準表サンプル);
             decisionTable = maker.CreateFrom("[OS] * [Language] * [Version]");
+
+            var formatter = new DecisionTableFormatter(decisionTable);
+            dataTable = formatter.ToDataTable();
         }
 
         [Fact]
         public void DecisionTableはDataTableに変換できる_因子水準部分をテスト()
         {
-            var formatter = new DecisionTableFormatter(decisionTable);
-            DataTable dataTable = formatter.ToDataTable();
-
-            Assert.Equal("因子", dataTable.Columns[0].ColumnName);
-            Assert.Equal("水準", dataTable.Columns[1].ColumnName);
+            Assert.Equal("因子", dataTable.Columns[TableFormatHelper.FactorColmnIdx].ColumnName);
+            Assert.Equal("水準", dataTable.Columns[TableFormatHelper.LevelColmnIdx].ColumnName);
 
             // 行の検証を共通メソッドで行う
             int i = 0;
@@ -44,6 +45,14 @@ namespace DecisionTableLibTest
             TableFormatHelper.AssertDataTableRow(dataTable, i++, "Version", "1.0");
             TableFormatHelper.AssertDataTableRow(dataTable, i++, "", "2.0");
         }
+
+        [Fact]
+        public void テストケース_つまり列を追加し適切に点を打てているかテスト()
+        {
+            Assert.Equal("x", dataTable.Rows[0]["1"]);
+        }
+
+        private int ケース列Idx(int caseIdx) => TableFormatHelper.LevelColmnIdx + caseIdx + 1;
 
     }
 
@@ -85,8 +94,8 @@ namespace DecisionTableLibTest
             var formatter = new DecisionTableFormatter(decisionTable);
             DataTable dataTable = formatter.ToDataTable();
 
-            Assert.Equal("因子", dataTable.Columns[0].ColumnName);
-            Assert.Equal("水準", dataTable.Columns[1].ColumnName);
+            Assert.Equal("因子", dataTable.Columns[TableFormatHelper.FactorColmnIdx].ColumnName);
+            Assert.Equal("水準", dataTable.Columns[TableFormatHelper.LevelColmnIdx].ColumnName);
 
             // 行の検証を共通メソッドで行う
             int i = 0;
@@ -101,6 +110,9 @@ namespace DecisionTableLibTest
 
     internal static class TableFormatHelper
     {
+        internal static int FactorColmnIdx = 0;
+        internal static int LevelColmnIdx = 1;
+
         /// <summary>
         /// 因子と水準の値を確認する
         /// </summary>
