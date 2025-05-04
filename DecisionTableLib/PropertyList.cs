@@ -29,5 +29,12 @@ namespace DecisionTableLib
             return propertyList;
 
         }
+
+        public string ToPropertyString(List<(string, string)> settings)
+        {
+            const string Separator = "|";
+            IEnumerable<string> each = settings.Select(setting => $"{setting.Item1}{Separator}{setting.Item2}");
+            return string.Join(Separator, each);
+        }
     }
 }

@@ -11,6 +11,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Windows;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DecisionTableMakerApp.ViewModel
 {
@@ -28,6 +29,7 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveProperty<DataTable> DecisionTable { get; set; } = new ReactiveProperty<DataTable>(new DataTable());
 
         private DecisionTableMaker _decisionTableMaker;
+        private string _latestFactorLevelTable;
 
         private void DeleteAdditionalRowSetting(AdditionalRowSetting targetSetting)
         {
@@ -87,14 +89,20 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void UpdateAdditionalSettings()
         {
-            //保存する
-            const string Separator = "|";
-            var each = AdditionalRowSettings.Select(setting => $"{setting.Col1Text.Value}{Separator}{setting.Col2Text.Value}");
-            var concat = string.Join(Separator, each);
-            Properties.Settings.Default.LastAdditionalSettings = concat;
-            Properties.Settings.Default.Save();
             UpdateTable();
         }
+
+        private void SaveAll()
+        {
+            //保存する
+            var str = AdditionalRowSettings.Select(setting => (setting.Col1Text.Value, setting.Col2Text.Value)).ToList();
+            Properties.Settings.Default.LastAdditionalSettings = new PropertyList().ToPropertyString(str);
+            Properties.Settings.Default.LastFormulaText = FormulaText.Value;
+            Properties.Settings.Default.LastFactorLevelText = _latestFactorLevelTable;
+
+            Properties.Settings.Default.Save();
+        }
+
         private void UpdateTable()
         {
             if (_decisionTableMaker == null) return;
@@ -105,12 +113,7 @@ namespace DecisionTableMakerApp.ViewModel
                 ParsedResultText.Value = decisionTable.ToString();
                 DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable()
                     .FormatToAppView(AdditionalRowSettings);
-
-                if (text != Properties.Settings.Default.LastFormulaText)
-                {
-                    Properties.Settings.Default.LastFormulaText = text;
-                    Properties.Settings.Default.Save();
-                }
+                SaveAll();
             }
             catch (Exception ex)
             {
@@ -172,15 +175,7 @@ namespace DecisionTableMakerApp.ViewModel
             try
             {
                 _decisionTableMaker = new DecisionTableMaker(new FactorLevelTable(rootNode), PlusMode.FillEven);
-
-                //次回読み込み用に保存する
-                // テキストを保存
-                if (Properties.Settings.Default.LastFactorLevelText != text)
-                {
-                    Properties.Settings.Default.LastFactorLevelText = text;
-                    Properties.Settings.Default.Save();
-                }
-                
+                _latestFactorLevelTable = text;
             }
             catch (Exception ex)
             {
