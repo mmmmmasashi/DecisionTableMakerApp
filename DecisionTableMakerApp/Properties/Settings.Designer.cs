@@ -46,5 +46,17 @@ namespace DecisionTableMakerApp.Properties {
                 this["LastFormulaText"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastAdditionalSettings {
+            get {
+                return ((string)(this["LastAdditionalSettings"]));
+            }
+            set {
+                this["LastAdditionalSettings"] = value;
+            }
+        }
     }
 }

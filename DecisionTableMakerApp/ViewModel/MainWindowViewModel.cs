@@ -1,4 +1,5 @@
-﻿using DecisionTableLib.Decisions;
+﻿using DecisionTableLib;
+using DecisionTableLib.Decisions;
 using DecisionTableLib.Excel;
 using DecisionTableLib.Format;
 using DecisionTableLib.FormulaAnalyzer;
@@ -35,7 +36,7 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void AddNewRowSetting(string col1Text, string col2Text)
         {
-            var newRowSetting = new AdditionalRowSetting(DeleteAdditionalRowSetting, UpdateTable, col1Text, col2Text);
+            var newRowSetting = new AdditionalRowSetting(DeleteAdditionalRowSetting, UpdateAdditionalSettings, col1Text, col2Text);
             AdditionalRowSettings.Add(newRowSetting);
         }
 
@@ -43,9 +44,8 @@ namespace DecisionTableMakerApp.ViewModel
         {
             AddAdditionalRowCommand = new ReactiveCommand();
             AddAdditionalRowCommand.Subscribe(_ => AddNewRowSetting("", ""));
-            AdditionalRowSettings = new ObservableCollection<AdditionalRowSetting>();
-            AddNewRowSetting("結果", "実施日");
-            AddNewRowSetting("", "実施者");
+
+            InitializeAdditionalRowSettings();
 
             AdditionalRowSettings.CollectionChanged += (sender, args) => UpdateTable();
 
@@ -58,7 +58,6 @@ namespace DecisionTableMakerApp.ViewModel
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
             _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
             FormulaText.Subscribe(text => UpdateTable());
-            FormulaText.Value = Properties.Settings.Default.LastFormulaText;
 
             // 前回保存されたテキストを読み込む
             var lastText = Properties.Settings.Default.LastFactorLevelText;
@@ -66,8 +65,36 @@ namespace DecisionTableMakerApp.ViewModel
             {
                 LoadFactorLevelTable(lastText);
             }
+
+            FormulaText.Value = Properties.Settings.Default.LastFormulaText;
         }
 
+        private void InitializeAdditionalRowSettings()
+        {
+            AdditionalRowSettings = new ObservableCollection<AdditionalRowSetting>();
+
+            if (string.IsNullOrEmpty(Properties.Settings.Default.LastAdditionalSettings))
+            {
+                AddNewRowSetting("結果", "実施日");
+                AddNewRowSetting("", "実施者");
+            }
+            else
+            {
+                new PropertyList().FromPropertyString(Properties.Settings.Default.LastAdditionalSettings).ToList()
+                    .ForEach(each => AddNewRowSetting(each.Item1, each.Item2));
+            }
+        }
+
+        private void UpdateAdditionalSettings()
+        {
+            //保存する
+            const string Separator = "|";
+            var each = AdditionalRowSettings.Select(setting => $"{setting.Col1Text.Value}{Separator}{setting.Col2Text.Value}");
+            var concat = string.Join(Separator, each);
+            Properties.Settings.Default.LastAdditionalSettings = concat;
+            Properties.Settings.Default.Save();
+            UpdateTable();
+        }
         private void UpdateTable()
         {
             if (_decisionTableMaker == null) return;
