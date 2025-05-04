@@ -45,6 +45,13 @@ namespace DecisionTableMakerApp.ViewModel
                     ParsedResultText.Value = "解析エラー" + Environment.NewLine + ex.Message;
                 }
             });
+
+            // 前回保存されたテキストを読み込む
+            var lastText = Properties.Settings.Default.LastFactorLevelText;
+            if (!string.IsNullOrEmpty(lastText))
+            {
+                LoadFactorLevelTable(lastText);
+            }
         }
 
         private void CreateDecisionTable()
@@ -85,9 +92,11 @@ namespace DecisionTableMakerApp.ViewModel
                 return;
             }
 
-            //サンプル
-            //string sampleText = "OS\tWindows\r\n\tMac\r\n\tLinux\r\nLanguage\tJapanese\r\n\tEnglish\r\n\tChinese";
+            LoadFactorLevelTable(text);
+        }
 
+        private void LoadFactorLevelTable(string text)
+        {
             var excelRange = new ExcelRange(text);
 
             FactorAndLevelTreeItems.Clear();
@@ -98,12 +107,19 @@ namespace DecisionTableMakerApp.ViewModel
             try
             {
                 _decisionTableMaker = new DecisionTableMaker(new FactorLevelTable(rootNode), PlusMode.FillEven);
+
+                //次回読み込み用に保存する
+                // テキストを保存
+                if (Properties.Settings.Default.LastFactorLevelText != text)
+                {
+                    Properties.Settings.Default.LastFactorLevelText = text;
+                    Properties.Settings.Default.Save();
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _decisionTableMaker = DecisionTableMaker.EmptyTableMaker;
             }
-            
         }
     }
 }
