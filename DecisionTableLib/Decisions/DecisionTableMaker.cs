@@ -29,6 +29,7 @@ namespace DecisionTableLib.Decisions
         /// <param name="formulaText">因子水準の計算式。具体例) [OS] * [Language] + [Version]</param>
         public DecisionTable CreateFrom(string formulaText)
         {
+            formulaText = formulaText.Replace(" ", "");
             var tokenList = new Tokenizer().Tokenize(formulaText);//トークンの取り出し
 
             //逆ポーランド記法になったトークン集
