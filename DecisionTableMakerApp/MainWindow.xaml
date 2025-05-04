@@ -42,7 +42,18 @@
                 <TextBox Name="formulaTextBox" Height="48" Text="{Binding FormulaText.Value, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}">
                 </TextBox>
                 <TextBlock Text="構文解析結果"/>
-                <TextBlock Text="{Binding ParsedResultText.Value}"/>
+                <RichTextBox Name="resultTextBox" IsReadOnly="True" Height="200" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument>
+                        <Paragraph>
+                            <Run Text="{Binding ParsedResultText.Value}"/>
+                        </Paragraph>
+                    </FlowDocument>
+                </RichTextBox>
+                <TextBlock Text="ディシジョンテーブル"/>
+                <!--ディシジョンテーブルの見栄えを確認するデータグリッド-->
+                <DataGrid>
+                    
+                </DataGrid>
             </StackPanel>
             <Button Grid.Row="1" Command="{Binding ImportTableCommand}" Content="Sample"></Button>
         </Grid>
