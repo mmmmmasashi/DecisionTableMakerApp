@@ -34,7 +34,7 @@ namespace DecisionTableLibTest
             Assert.Equal(new Level(expectedVersion), testCase.LevelOf("Version"));
         }
 
-        [Fact (Skip ="まだ")]
+        [Fact]
         public void ディシジョンテーブルをつくるテスト()
         {
             //サンプルの因子水準表を取得
