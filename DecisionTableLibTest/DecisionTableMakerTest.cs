@@ -131,11 +131,13 @@ namespace DecisionTableLibTest
             AssertTestCase3FactorLevels(testCases[i++], "Linux", "Chinese", "2.0");
         }
 
-        [Fact]
-        public void 三因子の掛け合わせ_独自水準で限定_ディシジョンテーブルを作るテスト()
+        [Theory]
+        [InlineData("[OS] * [Language(Japanese,English)] * [Version]")]
+        [InlineData("[OS] * [Language(Japanese ,English)] * [Version]")]
+        public void 三因子の掛け合わせ_独自水準で限定_ディシジョンテーブルを作るテスト_半角スペースは無意味(string formula)
         {
             //サンプルの計算式
-            List<TestCase> testCases = CreateCasesHelper("[OS] * [Language(Japanese,English)] * [Version]");
+            List<TestCase> testCases = CreateCasesHelper(formula);
             Assert.Equal(12, testCases.Count);
 
             foreach (var item in testCases)

@@ -45,10 +45,11 @@ namespace DecisionTableLib.FormulaAnalyzer
 
                     //TODO:順序例外
 
-                    //()で囲まれた範囲を除去
+                    //()で囲まれた範囲を除去, 半角スペースは除去
                     int bracketAreaCount = idxOfRightBracket - idxOfLeftBracket + 1;
                     var left = rpnElement.Substring(0, idxOfLeftBracket);
-                    var bracketContent = rpnElement.Substring(idxOfLeftBracket + 1, bracketAreaCount - 2);
+                    var bracketContent = rpnElement.Substring(idxOfLeftBracket + 1, bracketAreaCount - 2)
+                        .Replace(" ", "");
                     var right = rpnElement.Substring(idxOfRightBracket + 1);
 
                     //因子名の更新
