@@ -46,66 +46,75 @@
 
         <!-- 右側のコンテンツ -->
         <Grid Grid.Column="2">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="180"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <GroupBox Grid.Row="0" Header="計算式">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="180"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0">
-                            <TextBox Name="formulaTextBox"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- 計算式グループの高さ -->
+                <RowDefinition Height="5"/>
+                <!-- GridSplitter の高さ -->
+                <RowDefinition Height="*"/>
+                <!-- 結果グループの高さ -->
+            </Grid.RowDefinitions>
+
+            <!-- 計算式グループ -->
+            <GroupBox Grid.Row="0" Header="計算式">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0">
+                        <TextBox Name="formulaTextBox"
                         Text="{Binding FormulaText.Value, Mode=TwoWay,
-                    UpdateSourceTrigger=PropertyChanged}"/>
-                            <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}"/>
-                            <GroupBox Header="最終行に追加するテキスト">
-                                <ScrollViewer Height="50">
-                                    <StackPanel>
-                                        <ItemsControl ItemsSource="{Binding AdditionalRowSettings}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="1列目" VerticalAlignment="Center"/>
-                                                        <TextBox Height="24"  Width="100" Text="{Binding Col1Text.Value, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
-                                                        <TextBlock Text="2列目" VerticalAlignment="Center"/>
-                                                        <TextBox Height="24" Width="100" Text="{Binding Col2Text.Value, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
-                                                        <Button Content="削除" Command="{Binding DeleteCommand}"/>
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                        <Button Content=" + " Command="{Binding AddAdditionalRowCommand}" Width="Auto" HorizontalAlignment="Left"/>
-                                    </StackPanel>
-                                </ScrollViewer>
-                            </GroupBox>
-                        </StackPanel>
-                    </Grid>
-                </GroupBox>
-                <GroupBox Header="結果" Grid.Row="1">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <GroupBox Header="構文解析結果" Grid.Row="0">
-                            <RichTextBox Name="resultTextBox" IsReadOnly="True" Height="100" VerticalScrollBarVisibility="Auto">
-                                <FlowDocument>
-                                    <Paragraph>
-                                        <Run Text="{Binding ParsedResultText.Value}"/>
-                                    </Paragraph>
-                                </FlowDocument>
-                            </RichTextBox>
-                        </GroupBox>
-                        <GroupBox Header="ディシジョンテーブル" Grid.Row="1">
-                            <DataGrid x:Name="DataGrid" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
-                        </GroupBox>
-                    </Grid>
-                </GroupBox>
-            </Grid>
+                        UpdateSourceTrigger=PropertyChanged}"/>
+                        <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}"/>
+                    </StackPanel>
+                    <GroupBox Grid.Row="1" Header="最終行に追加するテキスト">
+                        <ScrollViewer>
+                            <StackPanel>
+                                <ItemsControl ItemsSource="{Binding AdditionalRowSettings}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="1列目" VerticalAlignment="Center"/>
+                                                <TextBox Height="24" Width="100" Text="{Binding Col1Text.Value, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
+                                                <TextBlock Text="2列目" VerticalAlignment="Center"/>
+                                                <TextBox Height="24" Width="100" Text="{Binding Col2Text.Value, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
+                                                <Button Content="削除" Command="{Binding DeleteCommand}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Content=" + " Command="{Binding AddAdditionalRowCommand}" Width="Auto" HorizontalAlignment="Left"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </GroupBox>
+                </Grid>
+            </GroupBox>
+
+            <!-- GridSplitter -->
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Background="Gray"/>
+
+            <!-- 結果グループ -->
+            <GroupBox Grid.Row="2" Header="結果">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <GroupBox Header="構文解析結果" Grid.Row="0">
+                        <RichTextBox Name="resultTextBox" IsReadOnly="True" Height="100" VerticalScrollBarVisibility="Auto">
+                            <FlowDocument>
+                                <Paragraph>
+                                    <Run Text="{Binding ParsedResultText.Value}"/>
+                                </Paragraph>
+                            </FlowDocument>
+                        </RichTextBox>
+                    </GroupBox>
+                    <GroupBox Header="ディシジョンテーブル" Grid.Row="1">
+                        <DataGrid x:Name="DataGrid" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
+                    </GroupBox>
+                </Grid>
+            </GroupBox>
         </Grid>
     </Grid>
 </Window>
