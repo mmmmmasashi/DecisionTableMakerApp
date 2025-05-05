@@ -4,6 +4,34 @@
              xmlns:local="clr-namespace:DecisionTableMakerApp"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <!-- GroupBox の共通スタイル -->
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin" Value="8,8,8,0"/>
+        </Style>
+
+        <!-- Button の共通スタイル -->
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="8,8,8,0"/>
+        </Style>
+
+        <!-- CheckBox の共通スタイル -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Margin" Value="8,8,8,0"/>
+        </Style>
+
+        <!-- TextBox の共通スタイル -->
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="8,8,8,0"/>
+        </Style>
+
+        <!-- RichTextBox の共通スタイル -->
+        <Style TargetType="RichTextBox">
+            <Setter Property="Margin" Value="8,8,8,0"/>
+        </Style>
+        
+        <!-- TreeView の共通スタイル -->
+        <Style TargetType="TreeView">
+            <Setter Property="Margin" Value="8,8,8,0"/>
+        </Style>
     </Application.Resources>
 </Application>

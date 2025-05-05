@@ -24,7 +24,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Button Grid.Column="1" Width="96" Margin="8" Content="Excelから取込"
+                <Button Grid.Column="1" Width="96" Content="Excelから取込"
                         Command="{Binding ImportTableCommand}" HorizontalAlignment="Right"/>
                 <TreeView Grid.Row="1" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
                     <TreeView.ItemContainerStyle>
@@ -60,19 +60,19 @@
                         <StackPanel Grid.Row="0">
                             <TextBox Name="formulaTextBox"
                         Text="{Binding FormulaText.Value, Mode=TwoWay,
-                    UpdateSourceTrigger=PropertyChanged}" Margin="8,8,8,0"/>
-                            <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}" Margin="8,8,8,0"/>
-                            <GroupBox Header="最終行に追加するテキスト" Margin="8,8,8,0">
-                                <ScrollViewer Margin="8,8,8,9" Height="50">
+                    UpdateSourceTrigger=PropertyChanged}"/>
+                            <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}"/>
+                            <GroupBox Header="最終行に追加するテキスト">
+                                <ScrollViewer Height="50">
                                     <StackPanel>
                                         <ItemsControl ItemsSource="{Binding AdditionalRowSettings}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="1列目"/>
-                                                        <TextBox Width="100" Text="{Binding Col1Text.Value, UpdateSourceTrigger=PropertyChanged}"/>
-                                                        <TextBlock Text="2列目"/>
-                                                        <TextBox Width="100" Text="{Binding Col2Text.Value, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        <TextBlock Text="1列目" VerticalAlignment="Center"/>
+                                                        <TextBox Height="24"  Width="100" Text="{Binding Col1Text.Value, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
+                                                        <TextBlock Text="2列目" VerticalAlignment="Center"/>
+                                                        <TextBox Height="24" Width="100" Text="{Binding Col2Text.Value, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
                                                         <Button Content="削除" Command="{Binding DeleteCommand}"/>
                                                     </StackPanel>
                                                 </DataTemplate>
