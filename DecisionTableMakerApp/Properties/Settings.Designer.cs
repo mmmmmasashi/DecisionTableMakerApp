@@ -50,7 +50,7 @@ namespace DecisionTableMakerApp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("結果|実施日||実施者||結果")]
         public string LastAdditionalSettings {
             get {
                 return ((string)(this["LastAdditionalSettings"]));

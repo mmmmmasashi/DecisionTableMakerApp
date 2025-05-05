@@ -87,16 +87,13 @@ namespace DecisionTableMakerApp.ViewModel
         {
             AdditionalRowSettings = new ObservableCollection<AdditionalRowSetting>();
 
-            if (string.IsNullOrEmpty(Properties.Settings.Default.LastAdditionalSettings))
-            {
-                AddNewRowSetting("結果", "実施日");
-                AddNewRowSetting("", "実施者");
-            }
-            else
-            {
-                new PropertyList().FromPropertyString(Properties.Settings.Default.LastAdditionalSettings).ToList()
-                    .ForEach(each => AddNewRowSetting(each.Item1, each.Item2));
-            }
+            string settingStr = Properties.Settings.Default.LastAdditionalSettings;
+            settingStr ??= "結果|実施日||実施者||結果"; // デフォルト値
+
+            new PropertyList()
+                .FromPropertyString(settingStr)
+                .ToList()
+                .ForEach(each => AddNewRowSetting(each.Item1, each.Item2));
         }
 
 

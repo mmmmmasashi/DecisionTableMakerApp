@@ -9,7 +9,7 @@
       <Value Profile="(Default)">[FactorA(LevelA1,LevelA2,LevelA3)] * [FactorB(LevelB1,LevelB2)] + [FactorC(LevelC1,LevelC2)]</Value>
     </Setting>
     <Setting Name="LastAdditionalSettings" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">結果|実施日||実施者||結果</Value>
     </Setting>
     <Setting Name="LastIsIgnoreWhiteSpace" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

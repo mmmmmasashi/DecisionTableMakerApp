@@ -11,8 +11,12 @@ namespace DecisionTableLib
     {
         public List<(string, string)> FromPropertyString(string originalText)
         {
+            if (originalText == string.Empty) return new List<(string, string)>() { ("", "") };
+
             // 文字列を'|'で分割
-            var properties = new Queue(originalText.Split('|'));
+            var properties = new Queue<string>(originalText.Split('|'));
+
+            
             // 2つずつペアにしてリストに追加
             var propertyList = new List<(string, string)>();
             while (properties.Count > 0)
