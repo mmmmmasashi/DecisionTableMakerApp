@@ -63,6 +63,7 @@ namespace DecisionTableMakerApp.ViewModel
             CreateDecisionTableCommand.Subscribe(_ => CreateDecisionTable());
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
+            FactorAndLevelTreeItems.Add(new TreeNode("root"));//これがないと要素観点表無の時に動かない
             FormulaText.Subscribe(text => UpdateTable());
 
             // 前回保存されたテキストを読み込む
@@ -114,7 +115,6 @@ namespace DecisionTableMakerApp.ViewModel
         private void UpdateTable()
         {
             if (FactorAndLevelTreeItems == null) return;
-            if (FactorAndLevelTreeItems.Count() == 0) return;
 
             var rootNode = FactorAndLevelTreeItems.FirstOrDefault();
 
