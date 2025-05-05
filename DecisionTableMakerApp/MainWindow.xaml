@@ -9,32 +9,47 @@
         Title="DecisionTableMaker" Height="800" Width="1024">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="300"/>
+            <!-- 左側の固定幅 -->
+            <ColumnDefinition Width="5"/>
+            <!-- GridSplitter の幅 -->
             <ColumnDefinition Width="*"/>
+            <!-- 右側の可変幅 -->
         </Grid.ColumnDefinitions>
+
+        <!-- 左側のコンテンツ -->
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Text="因子水準表"/>
-            <Button Grid.Row="1" Content="取込" Command="{Binding ImportTableCommand}"/>
-            <TreeView Grid.Row="2" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
+            <Grid Grid.Row="0" Margin="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="因子水準表"/>
+                <Button Grid.Column="1" Width="48" Content="取込" Command="{Binding ImportTableCommand}"/>
+            </Grid>
+            <TreeView Grid.Row="1" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
                 <TreeView.ItemContainerStyle>
                     <Style TargetType="TreeViewItem">
                         <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                     </Style>
                 </TreeView.ItemContainerStyle>
                 <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate DataType= "local:Person" ItemsSource="{Binding Children}">
+                    <HierarchicalDataTemplate DataType="local:Person" ItemsSource="{Binding Children}">
                         <TreeViewItem Header="{Binding Name}"/>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
         </Grid>
 
-        <Grid Grid.Column="1">
+        <!-- GridSplitter -->
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Background="Gray"/>
+
+        <!-- 右側のコンテンツ -->
+        <Grid Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -73,10 +88,8 @@
                     </FlowDocument>
                 </RichTextBox>
                 <TextBlock Text="ディシジョンテーブル"/>
-                <!--ディシジョンテーブルの見栄えを確認するデータグリッド-->
                 <DataGrid x:Name="DataGrid" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
             </StackPanel>
         </Grid>
-
     </Grid>
 </Window>
