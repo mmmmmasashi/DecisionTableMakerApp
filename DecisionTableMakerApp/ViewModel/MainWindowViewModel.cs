@@ -29,10 +29,10 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
 
         public ReactiveProperty<DataTable> DecisionTable { get; set; } = new ReactiveProperty<DataTable>(new DataTable());
-        public ReactiveProperty<bool> IsIgnoreWhiteSpace { get; }  
 
         private string _latestFactorLevelTable;
         private readonly bool _isInitialized = false;
+        private bool _isIgnoreWhiteSpace = false;
 
         private void DeleteAdditionalRowSetting(AdditionalRowSetting targetSetting)
         {
@@ -47,16 +47,20 @@ namespace DecisionTableMakerApp.ViewModel
 
         public MainWindowViewModel()
         {
+            _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
+
             ShowOptionSettingCommand.Subscribe(_ =>
             {
                 var optionWindow = new OptionSettingWindow();
                 optionWindow.Owner = System.Windows.Application.Current.MainWindow;
-                optionWindow.ShowDialog();
+                optionWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                bool? isChanged = optionWindow.ShowDialog();
+                if (isChanged == true)
+                {
+                    LoadSettings();
+                    UpdateTable();
+                }
             });
-
-            bool isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
-            IsIgnoreWhiteSpace = new ReactiveProperty<bool>(isIgnoreWhiteSpace);
-            IsIgnoreWhiteSpace.Subscribe(_ => UpdateIgnoreWhiteSpace());
 
             AddAdditionalRowCommand = new ReactiveCommand();
             AddAdditionalRowCommand.Subscribe(_ => AddNewRowSetting("", ""));
@@ -87,11 +91,6 @@ namespace DecisionTableMakerApp.ViewModel
             _isInitialized = true;
         }
 
-        private void UpdateIgnoreWhiteSpace()
-        {
-            SaveAll();
-            UpdateTable();
-        }
 
         private void InitializeAdditionalRowSettings()
         {
@@ -116,9 +115,16 @@ namespace DecisionTableMakerApp.ViewModel
             Properties.Settings.Default.LastAdditionalSettings = new PropertyList().ToPropertyString(str);
             Properties.Settings.Default.LastFormulaText = FormulaText.Value;
             Properties.Settings.Default.LastFactorLevelText = _latestFactorLevelTable;
-            Properties.Settings.Default.LastIsIgnoreWhiteSpace = IsIgnoreWhiteSpace.Value;
 
             Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// TODO: 他の設定値も
+        /// </summary>
+        private void LoadSettings()
+        {
+            _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
         }
 
         private void UpdateTable()
@@ -127,7 +133,7 @@ namespace DecisionTableMakerApp.ViewModel
 
             var rootNode = FactorAndLevelTreeItems.FirstOrDefault();
 
-            DecisionTableMaker decisionTableMaker = new DecisionTableMaker(new FactorLevelTable(rootNode), PlusMode.FillEven, IsIgnoreWhiteSpace.Value);
+            DecisionTableMaker decisionTableMaker = new DecisionTableMaker(new FactorLevelTable(rootNode), PlusMode.FillEven, _isIgnoreWhiteSpace);
 
             var text = FormulaText.Value;
             try

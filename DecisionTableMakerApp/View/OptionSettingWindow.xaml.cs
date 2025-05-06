@@ -22,6 +22,7 @@ namespace DecisionTableMakerApp.View
         public OptionSettingWindow()
         {
             InitializeComponent();
+            DataContext = new ViewModel.OptionSettingWindowViewModel();
         }
     }
 }

@@ -5,8 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DecisionTableMakerApp.View"
         mc:Ignorable="d"
-        Title="OptionSettingWindow" Height="450" Width="800">
+        Title="OptionSettingWindow" Height="300" Width="400">
     <Grid>
-        <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <!-- メインコンテンツ -->
+            <RowDefinition Height="Auto"/>
+            <!-- ボタンエリア -->
+        </Grid.RowDefinitions>
+
+        <!-- メインコンテンツ -->
+        <StackPanel Grid.Row="0" Margin="10">
+            <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}" Margin="0,0,0,10"/>
+            <!-- 他の設定項目をここに追加可能 -->
+        </StackPanel>
+
+        <!-- ボタンエリア -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
+            <Button Content="キャンセル" Width="100" Margin="5,0,0,0" Command="{Binding CancelCommand}"/>
+            <Button Content="OK" Width="100" Margin="5,0,0,0" Command="{Binding OKCommand}"/>
+        </StackPanel>
     </Grid>
 </Window>
