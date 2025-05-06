@@ -30,9 +30,13 @@ namespace DecisionTableMakerApp.ViewModel
 
         public ReactiveProperty<DataTable> DecisionTable { get; set; } = new ReactiveProperty<DataTable>(new DataTable());
 
+        //設定値
+        private IEnumerable<(string, string)> _additionalRowSettings;
+
         private string _latestFactorLevelTable;
         private readonly bool _isInitialized = false;
         private bool _isIgnoreWhiteSpace = false;
+
 
         private void DeleteAdditionalRowSetting(AdditionalRowSetting targetSetting)
         {
@@ -47,7 +51,9 @@ namespace DecisionTableMakerApp.ViewModel
 
         public MainWindowViewModel()
         {
+            //設定値を読み込む
             _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
+            _additionalRowSettings = InitializeAdditionalRowSettings();
 
             ShowOptionSettingCommand.Subscribe(_ =>
             {
@@ -65,7 +71,10 @@ namespace DecisionTableMakerApp.ViewModel
             AddAdditionalRowCommand = new ReactiveCommand();
             AddAdditionalRowCommand.Subscribe(_ => AddNewRowSetting("", ""));
 
-            InitializeAdditionalRowSettings();
+            foreach (var rowSetting in _additionalRowSettings)
+            {
+                AddNewRowSetting(rowSetting.Item1, rowSetting.Item2);
+            }
 
             AdditionalRowSettings.CollectionChanged += (sender, args) => UpdateTable();
 
@@ -92,17 +101,16 @@ namespace DecisionTableMakerApp.ViewModel
         }
 
 
-        private void InitializeAdditionalRowSettings()
+        private IEnumerable<(string, string)> InitializeAdditionalRowSettings()
         {
             AdditionalRowSettings = new ObservableCollection<AdditionalRowSetting>();
 
             string settingStr = Properties.Settings.Default.LastAdditionalSettings;
             settingStr ??= "結果|実施日||実施者||結果"; // デフォルト値
 
-            new PropertyList()
+            return new PropertyList()
                 .FromPropertyString(settingStr)
-                .ToList()
-                .ForEach(each => AddNewRowSetting(each.Item1, each.Item2));
+                .ToList();
         }
 
 
