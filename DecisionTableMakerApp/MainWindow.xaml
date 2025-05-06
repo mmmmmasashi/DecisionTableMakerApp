@@ -95,12 +95,19 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="Excel単一出力" Width="Auto" Command="{Binding ExportExcelCommand}" HorizontalAlignment="Left"/>
-                                <Button Content="Excel一括出力" Width="Auto" Command="{Binding ExportMultiSheetExcelCommand}" HorizontalAlignment="Left"/>
-                                <TextBlock Text="作成者" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding AuthorText.Value}"/>
-                            </StackPanel>
+                            <Grid Grid.Row="0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Excel単一出力" Width="Auto" Command="{Binding ExportExcelCommand}" HorizontalAlignment="Left"/>
+                                    <Button Content="Excel一括出力" Width="Auto" Command="{Binding ExportMultiSheetExcelCommand}" HorizontalAlignment="Left"/>
+                                    <TextBlock Text="作成者" VerticalAlignment="Center"/>
+                                    <TextBox Text="{Binding AuthorText.Value}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="2因子ペア未網羅数 :"/>
+                                    <TextBlock Text="{Binding UncoveredCountText.Value}"/>
+                                    <TextBlock Text="件"/>
+                                </StackPanel>
+                            </Grid>
                             <DataGrid x:Name="DataGrid" Grid.Row="1" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
                         </Grid>
                     </GroupBox>
