@@ -92,7 +92,7 @@ namespace DecisionTableMakerApp.ViewModel
                 try
                 {
                     var property = new ExcelProperty(
-                        "Sheet1",
+                        inputWindow.TitleText,
                         inputWindow.TitleText,
                         inputWindow.Author,
                         exportTime,
