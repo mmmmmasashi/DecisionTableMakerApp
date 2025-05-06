@@ -62,11 +62,11 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
                         <TextBox Name="formulaTextBox"
                         Text="{Binding FormulaText.Value, Mode=TwoWay,
                         UpdateSourceTrigger=PropertyChanged}"/>
-                        <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}"/>
+                        <Button Content="オプション" Width="100" Command="{Binding ShowOptionSettingCommand}"/>
                     </StackPanel>
                     <GroupBox Grid.Row="1" Header="最終行に追加するテキスト">
                         <ScrollViewer>

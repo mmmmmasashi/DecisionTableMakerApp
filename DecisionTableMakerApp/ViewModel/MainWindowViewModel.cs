@@ -4,6 +4,7 @@ using DecisionTableLib.Excel;
 using DecisionTableLib.Format;
 using DecisionTableLib.FormulaAnalyzer;
 using DecisionTableLib.Trees;
+using DecisionTableMakerApp.View;
 using Reactive.Bindings;
 using System;
 using System.Collections.ObjectModel;
@@ -19,6 +20,7 @@ namespace DecisionTableMakerApp.ViewModel
     {
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
         public ObservableCollection<AdditionalRowSetting> AdditionalRowSettings { get; private set; } = new ObservableCollection<AdditionalRowSetting>();
+        public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ImportTableCommand { get; }
         public ReactiveCommand AddAdditionalRowCommand { get; }
         public ReactiveCommand CreateDecisionTableCommand { get; }
@@ -45,6 +47,13 @@ namespace DecisionTableMakerApp.ViewModel
 
         public MainWindowViewModel()
         {
+            ShowOptionSettingCommand.Subscribe(_ =>
+            {
+                var optionWindow = new OptionSettingWindow();
+                optionWindow.Owner = System.Windows.Application.Current.MainWindow;
+                optionWindow.ShowDialog();
+            });
+
             bool isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
             IsIgnoreWhiteSpace = new ReactiveProperty<bool>(isIgnoreWhiteSpace);
             IsIgnoreWhiteSpace.Subscribe(_ => UpdateIgnoreWhiteSpace());
