@@ -8,6 +8,7 @@ namespace ExcelAccessLib
 {
     public record ExcelProperty
     {
+        public string Title { get; }
         public string SheetName { get; }
         public string Author { get; }
 
@@ -16,14 +17,14 @@ namespace ExcelAccessLib
         /// </summary>
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
-        public ExcelProperty(string sheetName, string creatorName, Dictionary<string, string>? properties = null)
+        public ExcelProperty(string sheetName, string title, string creatorName, Dictionary<string, string>? properties = null)
         {
             if (string.IsNullOrEmpty(sheetName))
             {
                 throw new ArgumentException("Sheet name cannot be null or empty.", nameof(sheetName));
             }
 
-
+            Title = title;
             SheetName = sheetName;
 
             if (string.IsNullOrEmpty(creatorName))

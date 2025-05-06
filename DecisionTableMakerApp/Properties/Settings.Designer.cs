@@ -71,5 +71,41 @@ namespace DecisionTableMakerApp.Properties {
                 this["LastIsIgnoreWhiteSpace"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("未設定")]
+        public string LastExcelTitle {
+            get {
+                return ((string)(this["LastExcelTitle"]));
+            }
+            set {
+                this["LastExcelTitle"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("未設定")]
+        public string LastAuthor {
+            get {
+                return ((string)(this["LastAuthor"]));
+            }
+            set {
+                this["LastAuthor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("未設定")]
+        public string LastInspection {
+            get {
+                return ((string)(this["LastInspection"]));
+            }
+            set {
+                this["LastInspection"] = value;
+            }
+        }
     }
 }

@@ -34,11 +34,11 @@ namespace ExcelAccessLib
             var workbook = new XLWorkbook();
 
             // 新しいワークシートを追加
-            var worksheet = workbook.Worksheets.Add("Sheet1");
+            var worksheet = workbook.Worksheets.Add(_excelProperty.SheetName);
 
             //タイトル
             int rowIdx = 1;
-            worksheet.Cell(rowIdx++, 1).Value = _excelProperty.SheetName;
+            worksheet.Cell(rowIdx++, 1).Value = _excelProperty.Title;
 
             const int RightSideAtrCol = 9;
             const int RightSideValCol = RightSideAtrCol + 2;

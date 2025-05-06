@@ -63,6 +63,13 @@ namespace DecisionTableMakerApp.ViewModel
 
             ExportExcelCommand.Subscribe(_ =>
             {
+                //検査観点・作成者を入力するダイアログを表示
+                var inputWindow = new ExportInfoWindow();
+                inputWindow.Owner = System.Windows.Application.Current.MainWindow;
+                inputWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                bool? isOk = inputWindow.ShowDialog();
+                if (isOk != true) return;
+
                 //出力先となるファイル名をユーザーに入力してもらう
                 var saveFileDialog = new Microsoft.Win32.SaveFileDialog
                 {
@@ -79,9 +86,11 @@ namespace DecisionTableMakerApp.ViewModel
                 {
                     var tableToExport = RemoveFirstLineForExport(DecisionTable.Value);
                     var property = new ExcelProperty(
-                        "検査設計Sample",
-                        "山田太郎",
+                        "Sheet1",
+                        inputWindow.TitleText,
+                        inputWindow.Author,
                         new Dictionary<string, string>() {
+                            { "検査観点", inputWindow.Inspection },
                             { "計算式", FormulaText.Value }
                         });
 
