@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace DecisionTableLib.Decisions
 {
+    /// <summary>
+    /// ディシジョンテーブル
+    /// </summary>
     public class DecisionTable
     {
         internal List<TestCase> TestCases { get; set; }
@@ -32,14 +35,12 @@ namespace DecisionTableLib.Decisions
             return factors;
         }
 
+        /// <summary>
+        /// 決定表のコンストラクタ
+        /// </summary>
         public DecisionTable(IEnumerable<TestCase> testCases)
         {
             TestCases = testCases.ToList();
-        }
-
-        public string ToTsv()
-        {
-            throw new NotImplementedException();
         }
 
         public override string ToString()
