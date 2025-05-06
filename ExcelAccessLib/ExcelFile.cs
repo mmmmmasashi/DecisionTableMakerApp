@@ -34,7 +34,8 @@ namespace ExcelAccessLib
             var workbook = new XLWorkbook();
 
             // 新しいワークシートを追加
-            var worksheet = workbook.Worksheets.Add(_excelProperty.SheetName);
+            var truncatedSheetName = TruncSheetName(_excelProperty.SheetName);
+            var worksheet = workbook.Worksheets.Add(truncatedSheetName);
 
             //タイトル
             int rowIdx = 1;
@@ -88,6 +89,18 @@ namespace ExcelAccessLib
             tableRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;   // 内部線
 
             return workbook;
+        }
+
+        /// <summary>
+        /// シート名は31文字まで
+        /// </summary>
+        private string TruncSheetName(string sheetName)
+        {
+            if (sheetName.Length > 31)
+            {
+                sheetName = sheetName.Substring(0, 31);
+            }
+            return sheetName;
         }
 
         private int ToDecisionTableColIdx(int colIdx)

@@ -1,6 +1,7 @@
 ﻿using DecisionTableMakerApp.View;
 using Reactive.Bindings;
 using System;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 
 namespace DecisionTableMakerApp.ViewModel
@@ -55,7 +56,19 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void CloseThisWindow(bool isOk)
         {
-            if (isOk) SaveSettings();
+            if (isOk)
+            {
+                (bool isValidText, string errorMessage) = CheckTextFormat();
+                if (!isValidText)
+                {
+                    // エラーメッセージを表示
+                    System.Windows.MessageBox.Show(errorMessage, "エラー", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+            }
+            
+            SaveSettings();
+
 
             var window = System.Windows.Application.Current.Windows.OfType<ExportInfoWindow>().FirstOrDefault();
             if (window != null)
@@ -63,6 +76,31 @@ namespace DecisionTableMakerApp.ViewModel
                 window.DialogResult = isOk;
                 window.Close();
             }
+        }
+
+        /// <summary>
+        /// InspectionTextはファイル名に使う。TitleはExcelのA1セルとシート名に使う。
+        /// 利用可能な文字列かどうかを判断する
+        /// </summary>
+        private (bool, string) CheckTextFormat()
+        {
+            string pattern = @"^[^\\/:*?""<>|]+$"; // ファイル名に使えない文字を除外する正規表現
+            if (string.IsNullOrWhiteSpace(TitleText.Value)
+                || string.IsNullOrWhiteSpace(InspectionText.Value)
+                || string.IsNullOrWhiteSpace(AuthorText.Value))
+            {
+                return (false, "空白のフィールドがあります");
+            }
+            else if (!Regex.IsMatch(TitleText.Value, pattern))
+            {
+                return (false, "タイトルにファイル名に使えない文字が入っています");// 不正な文字が含まれている場合
+            }
+            else if (!Regex.IsMatch(InspectionText.Value, pattern))
+            {
+                return (false, "検査観点にファイル名に使えない文字が入っています");// 不正な文字が含まれている場合
+            }
+
+            return (true, ""); // すべてのフィールドが有効な場合
         }
     }
 }
