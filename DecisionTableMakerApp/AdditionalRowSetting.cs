@@ -13,7 +13,6 @@ namespace DecisionTableMakerApp
     public class AdditionalRowSetting
     {
         private readonly Action<AdditionalRowSetting> _deleteCallBack;
-        private readonly Action _updateTableCollback;
 
         public ReactiveProperty<string> Col1Text { get; }
         public ReactiveProperty<string> Col2Text { get; }
@@ -21,17 +20,12 @@ namespace DecisionTableMakerApp
 
         public AdditionalRowSetting(
             Action<AdditionalRowSetting> deleteCallBack,//TODO:エレガントな解法あるはず
-            Action updateTableCallBack, //TODO:エレガントな解法あるはず
             string col1Text, string col2Text)
         {
             _deleteCallBack = deleteCallBack;
-            _updateTableCollback = updateTableCallBack;
 
             Col1Text = new ReactiveProperty<string>(col1Text);
-            Col1Text.Subscribe(_ => _updateTableCollback());
-
             Col2Text = new ReactiveProperty<string>(col2Text);
-            Col2Text.Subscribe(_ => _updateTableCollback());
 
             DeleteCommand = new ReactiveCommand();
             DeleteCommand.Subscribe(_ =>

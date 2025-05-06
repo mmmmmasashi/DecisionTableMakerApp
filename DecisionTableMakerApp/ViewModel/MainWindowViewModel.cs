@@ -105,6 +105,7 @@ namespace DecisionTableMakerApp.ViewModel
         private void LoadSettings()
         {
             _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
+            _additionalRowSettings = LoadAdditionalRowSettings();
         }
 
         private void UpdateTable()
