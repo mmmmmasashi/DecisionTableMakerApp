@@ -65,9 +65,10 @@ namespace ExcelAccessLib
 
             //_decisionTableの内容を追加
             //DataTable全体を追加する
+            int leftTopRowIdx = rowIdx;
+            int leftTopColIdx = ToDecisionTableColIdx(0);
             if (_decisionTable != null)
             {
-
                 // DataTableのデータを追加
                 foreach (DataRow row in _decisionTable.Rows)
                 {
@@ -78,6 +79,13 @@ namespace ExcelAccessLib
                     rowIdx++;
                 }
             }
+            int rightBottomRowIdx = rowIdx - 1;
+            int rightBottomColIdx = ToDecisionTableColIdx(_decisionTable.Columns.Count - 1);
+
+            var tableRange = worksheet.Range(leftTopRowIdx, leftTopColIdx, rightBottomRowIdx, rightBottomColIdx);
+            //格子状の罫線を引く
+            tableRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;  // 外枠
+            tableRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;   // 内部線
 
             return workbook;
         }
