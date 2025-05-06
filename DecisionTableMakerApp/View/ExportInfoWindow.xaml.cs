@@ -7,7 +7,6 @@ namespace DecisionTableMakerApp.View
     {
         private ExportInfoWindowViewModel _vm;
         public string Inspection { get => _vm.InspectionText.Value; }
-        public string Author { get => _vm.AuthorText.Value; }
 
         public ExportInfoWindow()
         {

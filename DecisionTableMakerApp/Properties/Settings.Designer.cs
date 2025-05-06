@@ -75,18 +75,6 @@ namespace DecisionTableMakerApp.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("未設定")]
-        public string LastExcelTitle {
-            get {
-                return ((string)(this["LastExcelTitle"]));
-            }
-            set {
-                this["LastExcelTitle"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("未設定")]
         public string LastAuthor {
             get {
                 return ((string)(this["LastAuthor"]));

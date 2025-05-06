@@ -29,6 +29,7 @@ namespace DecisionTableMakerApp.ViewModel
 
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
+        public ReactiveProperty<string> AuthorText { get; set; } = new ReactiveProperty<string>("");
 
         public ReactiveProperty<DataTable> DecisionTable { get; set; } = new ReactiveProperty<DataTable>(new DataTable());
         public string Title { get; }
@@ -44,6 +45,8 @@ namespace DecisionTableMakerApp.ViewModel
             //バージョン表示
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             Title = $"Decision Table Maker v{version}";
+            AuthorText.Value = Properties.Settings.Default.LastAuthor;
+            AuthorText.Subscribe(_ => SaveAuthor());
 
             //設定値を読み込む
             _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
@@ -123,7 +126,7 @@ namespace DecisionTableMakerApp.ViewModel
             //Excelに出力
             try
             {
-                ExportExcelSingleSheetFile(inputWindow.Author, inputWindow.Inspection, FormulaText.Value, exportTime, fileName);
+                ExportExcelSingleSheetFile(AuthorText.Value, inputWindow.Inspection, FormulaText.Value, exportTime, fileName);
 
                 //Excelを開く
                 StartExcel(fileName);
@@ -177,9 +180,8 @@ namespace DecisionTableMakerApp.ViewModel
 
             var exportTime = DateTime.Now;
 
-            //TODO:プロパティ
             var excelProperty = new ExcelBookProperty(
-                "作成者",
+                AuthorText.Value,
                 exportTime
             );
 
@@ -205,6 +207,15 @@ namespace DecisionTableMakerApp.ViewModel
             {
                 //エラー表示
                 MessageBox.Show("Excelの出力に失敗しました。" + Environment.NewLine + ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SaveAuthor()
+        {
+            if (AuthorText.Value != Properties.Settings.Default.LastAuthor)
+            {
+                Properties.Settings.Default.LastAuthor = AuthorText.Value;
+                Properties.Settings.Default.Save();
             }
         }
 

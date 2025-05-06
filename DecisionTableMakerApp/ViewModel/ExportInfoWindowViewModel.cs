@@ -8,10 +8,7 @@ namespace DecisionTableMakerApp.ViewModel
 {
     public class ExportInfoWindowViewModel
     {
-        // 検査観点と作成者のプロパティ
-        public ReactiveProperty<string> TitleText { get; } = new ReactiveProperty<string>();
         public ReactiveProperty<string> InspectionText { get; } = new ReactiveProperty<string>();
-        public ReactiveProperty<string> AuthorText { get; } = new ReactiveProperty<string>();
 
         // OKとキャンセルのコマンド
         public ReactiveCommand OKCommand { get; } = new ReactiveCommand();
@@ -41,16 +38,12 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void LoadSettings()
         {
-            TitleText.Value = Properties.Settings.Default.LastExcelTitle ?? string.Empty;
             InspectionText.Value = Properties.Settings.Default.LastInspection ?? string.Empty;
-            AuthorText.Value = Properties.Settings.Default.LastAuthor ?? string.Empty;
         }
 
         private void SaveSettings()
         {
-            Properties.Settings.Default.LastExcelTitle = TitleText.Value;
             Properties.Settings.Default.LastInspection = InspectionText.Value;
-            Properties.Settings.Default.LastAuthor = AuthorText.Value;
             Properties.Settings.Default.Save();
         }
 
@@ -85,15 +78,9 @@ namespace DecisionTableMakerApp.ViewModel
         private (bool, string) CheckTextFormat()
         {
             string pattern = @"^[^\\/:*?""<>|]+$"; // ファイル名に使えない文字を除外する正規表現
-            if (string.IsNullOrWhiteSpace(TitleText.Value)
-                || string.IsNullOrWhiteSpace(InspectionText.Value)
-                || string.IsNullOrWhiteSpace(AuthorText.Value))
+            if (string.IsNullOrWhiteSpace(InspectionText.Value))
             {
                 return (false, "空白のフィールドがあります");
-            }
-            else if (!Regex.IsMatch(TitleText.Value, pattern))
-            {
-                return (false, "タイトルにファイル名に使えない文字が入っています");// 不正な文字が含まれている場合
             }
             else if (!Regex.IsMatch(InspectionText.Value, pattern))
             {

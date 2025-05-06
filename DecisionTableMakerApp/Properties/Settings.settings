@@ -14,9 +14,6 @@
     <Setting Name="LastIsIgnoreWhiteSpace" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="LastExcelTitle" Type="System.String" Scope="User">
-      <Value Profile="(Default)">未設定</Value>
-    </Setting>
     <Setting Name="LastAuthor" Type="System.String" Scope="User">
       <Value Profile="(Default)">未設定</Value>
     </Setting>

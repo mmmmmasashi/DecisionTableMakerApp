@@ -98,6 +98,8 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Excel単一出力" Width="Auto" Command="{Binding ExportExcelCommand}" HorizontalAlignment="Left"/>
                                 <Button Content="Excel一括出力" Width="Auto" Command="{Binding ExportMultiSheetExcelCommand}" HorizontalAlignment="Left"/>
+                                <TextBlock Text="作成者" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding AuthorText.Value}"/>
                             </StackPanel>
                             <DataGrid x:Name="DataGrid" Grid.Row="1" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
                         </Grid>
