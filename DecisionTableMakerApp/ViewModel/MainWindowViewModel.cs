@@ -28,6 +28,7 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ExportMultiSheetExcelCommand { get; } = new ReactiveCommand();
 
+        public ReactiveProperty<string> UncoveredCountText { get; } = new ReactiveProperty<string>("-");
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<string> AuthorText { get; set; } = new ReactiveProperty<string>("");
@@ -164,9 +165,13 @@ namespace DecisionTableMakerApp.ViewModel
 
             var sheetPropertyList = new List<ExcelSheetProperty>() { new ExcelSheetProperty(inspection, inspection, formula) };
 
-            return new ExcelFile(CreateNewDecisionTable, property, sheetPropertyList).Export(fileName);
+            return new ExcelFile(CreateNewDecisionDataTable, property, sheetPropertyList).Export(fileName);
         }
-
+        DataTable CreateNewDecisionDataTable(string formula)
+        {
+            var ret = CreateNewDecisionTable(formula);
+            return ret.Item1;
+        }
         private void ShowMessageBoxWithImage(string msg, string imagePath)
         {
             var window = new MessageWithFigWindow(msg, imagePath);
@@ -215,7 +220,7 @@ namespace DecisionTableMakerApp.ViewModel
                     return new ExcelSheetProperty(sheetName, pair.Inspection, pair.Formula);
                 }).ToList();
 
-                var exceptions = new ExcelFile(CreateNewDecisionTable, excelProperty, sheetProperties).Export(fileName);
+                var exceptions = new ExcelFile(CreateNewDecisionDataTable, excelProperty, sheetProperties).Export(fileName);
                 if (exceptions.Count > 0)
                 {
                     //エラーがあった場合はその一覧を表示
@@ -272,7 +277,7 @@ namespace DecisionTableMakerApp.ViewModel
             _additionalRowSettings = LoadAdditionalRowSettings();
         }
 
-        DataTable CreateNewDecisionTable(string formula)
+        (DataTable, DecisionTable) CreateNewDecisionTable(string formula)
         {
             var rootNode = FactorAndLevelTreeItems.FirstOrDefault();
 
@@ -280,8 +285,7 @@ namespace DecisionTableMakerApp.ViewModel
                 new FactorLevelTable(rootNode), PlusMode.FillEven, _isIgnoreWhiteSpace);
             var decisionTable = decisionTableMaker.CreateFrom(formula);
             ParsedResultText.Value = decisionTable.ToString();
-            return new DecisionTableFormatter(decisionTable).ToDataTable().FormatToAppView(_additionalRowSettings);
-
+            return (new DecisionTableFormatter(decisionTable).ToDataTable().FormatToAppView(_additionalRowSettings), decisionTable);
         }
 
         private void UpdateTable()
@@ -292,7 +296,11 @@ namespace DecisionTableMakerApp.ViewModel
             try
             {
                 var formula = FormulaText.Value;
-                DecisionTable.Value = CreateNewDecisionTable(formula);
+                (DecisionTable.Value, DecisionTable decitionTable) = CreateNewDecisionTable(formula);
+
+                //未網羅の組み合わせ数を表示
+                UncoveredCountText.Value = CalcUncoverdPairNumNoError(decitionTable);
+
                 updateSuccess = true;
             }
             catch (Exception ex)
@@ -302,6 +310,20 @@ namespace DecisionTableMakerApp.ViewModel
             }
 
             if (updateSuccess) SaveAll();
+        }
+
+        private string CalcUncoverdPairNumNoError(DecisionTable decitionTable)
+        {
+            try
+            {
+                var result = new TestCaseOptimizer().CalcUncoverdPairNum(decitionTable);
+                return result.Score.ToString();
+            }
+            catch (Exception)
+            {
+                //この補助的な機能では、エラーで死なせない
+                return "Error";
+            }
         }
 
         private void ImportFactorAndLevelTableData()

@@ -25,6 +25,7 @@ namespace DecisionTableLib.Decisions
             }
         }
 
+        public static FactorLevelTable Blank { get => new FactorLevelTable(new TreeNode("root")); }
         public List<Factor> Factors { get => new List<Factor>(_table); }
     }
 }
