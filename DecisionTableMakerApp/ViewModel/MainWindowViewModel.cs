@@ -24,6 +24,7 @@ namespace DecisionTableMakerApp.ViewModel
     internal class MainWindowViewModel
     {
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
+        public ReactiveCommand RefreshCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ImportTableCommand { get; }
         public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
@@ -57,6 +58,7 @@ namespace DecisionTableMakerApp.ViewModel
             _additionalRowSettings = LoadAdditionalRowSettings();
             _randomSearchNum = LoadRandomSearchNum();
 
+            RefreshCommand.Subscribe(UpdateTable);
             ShowOptionSettingCommand.Subscribe(_ =>
             {
                 var optionWindow = new OptionSettingWindow();

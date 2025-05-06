@@ -21,7 +21,7 @@
       <Value Profile="(Default)">未設定</Value>
     </Setting>
     <Setting Name="RandomSearchNum" Type="System.String" Scope="User">
-      <Value Profile="(Default)">100</Value>
+      <Value Profile="(Default)">20</Value>
     </Setting>
   </Settings>
 </SettingsFile>

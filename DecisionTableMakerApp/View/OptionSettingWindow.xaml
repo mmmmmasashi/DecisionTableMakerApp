@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DecisionTableMakerApp.View"
         mc:Ignorable="d"
-        Title="オプション設定" Height="500" Width="400">
+        Title="オプション設定" Height="500" Width="450">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
