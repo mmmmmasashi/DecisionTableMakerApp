@@ -11,6 +11,7 @@ namespace DecisionTableLib.Decisions
     /// </summary>
     public class DecisionTable
     {
+        public static DecisionTable Empty { get => new DecisionTable(new List<TestCase>()); }
         /// <summary>
         /// テストケースのリスト
         /// </summary>

@@ -22,7 +22,7 @@ namespace DecisionTableLib.FormulaAnalyzer
                     tokens.Add(expr.Substring(i + 1, j - i - 1));
                     i = j + 1;
                 }
-                else if (expr[i] == '*' || expr[i] == '+')
+                else if (expr[i] == '*' || expr[i] == '+' || expr[i] == '<')
                 {
                     tokens.Add(expr[i].ToString());
                     i++;

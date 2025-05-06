@@ -54,10 +54,27 @@ namespace DecisionTableLib.Decisions
             var factors = logic.OverwriteFactors(factorsTmp, factorOverwriteList);
 
             //期待する出力 : テストケースの集合体。各テストケースは、(string : 因子, string : 水準)のリストを持つ
-            IEnumerable<IEnumerable<(string, string)>> combinations = _rpn.EvaluateRPN(rpn, factors);
 
-            var testCases = combinations.Select(factorLevelCombination => new TestCase(factorLevelCombination));
-            return new DecisionTable(testCases);
+            int bestScore = int.MaxValue;
+            DecisionTable bestDecisionTable = DecisionTable.Empty;
+            int repeatCount = (rpn.Contains("<")) ? 100 : 1;
+            for (int i = 0; i < repeatCount; i++)
+            {
+                IEnumerable<IEnumerable<(string, string)>> combinations = _rpn.EvaluateRPN(rpn, factors);
+
+                var testCases = combinations.Select(factorLevelCombination => new TestCase(factorLevelCombination));
+                var decisionTable = new DecisionTable(testCases);
+
+                var optimizer = new TestCaseOptimizer();
+                var optResult = optimizer.CalcUncoverdPairNum(decisionTable);
+
+                if (bestScore > optResult.Score)
+                {
+                    bestScore = optResult.Score;
+                    bestDecisionTable = decisionTable;
+                }
+            }
+            return bestDecisionTable;
         }
 
         private string RemoveWhiteSpace(string formulaText)

@@ -31,7 +31,6 @@ namespace DecisionTableLib.FormulaAnalyzer
         /// <returns></returns>
         internal IEnumerable<IEnumerable<(string, string)>> EvaluateRPN(List<string> rpn, IEnumerable<Factor> factors)
         {
-
             //参考にしたコードはこう >     static List<List<string>> EvaluateRPN(List<string> rpn, Dictionary<string, List<string>> factors)
             var stack = new Stack<List<List<(string, string)>>>();
 
@@ -61,7 +60,7 @@ namespace DecisionTableLib.FormulaAnalyzer
                 {
                     //足し算とは、ケース数が大きい方のケース集合に、
                     //ケース数が少ない方のケース集合を溶け込ませること
-                    
+
                     var right = stack.Pop();
                     var left = stack.Pop();
 
@@ -84,6 +83,32 @@ namespace DecisionTableLib.FormulaAnalyzer
                     }
                     stack.Push(product);
                 }
+                else if (token == "<")
+                {
+                    //足し算のように並び順は綺麗ではないが、極力組み合わせに対応する
+                    var right = stack.Pop();
+                    var left = stack.Pop();
+
+                    //以下は左の方が多い前提
+                    //左のケース集合に、右のケース集合を溶け込ませる
+                    //例) 左 [[("OS", "Windows")], [("OS", "Mac")], [("OS", "Linux")]]
+                    //右 [[("Language", "Japanese")], [("Language", "English")]]のとき
+                    //[[("OS", "Windows"), ("Language", "Japanese")], [("OS", "Mac"), ("Language", "Japanese")], [("OS", "Linux"), ("Language", "English")],
+
+                    (left, right) = new Filler().Fill(left, right, _plusMode);
+                    var randomIdxes = RandomIdxOrder(left.Count());
+
+                    var product = new List<List<(string, string)>>();
+                    for (int i = 0; i < left.Count; i++)
+                    {
+                        //左の要素と、右の要素を組み合わせる
+                        var newTestCase = new List<(string, string)>();
+                        newTestCase.AddRange(left[i]);
+                        newTestCase.AddRange(right[randomIdxes[i]]);
+                        product.Add(newTestCase);
+                    }
+                    stack.Push(product);
+                }
                 else
                 {
                     //水準をテストケースのリストにする( [ [("OS", "Windows")], [("OS", "Mac")], [("OS", "Linux")] ] )
@@ -98,7 +123,13 @@ namespace DecisionTableLib.FormulaAnalyzer
             }
             return stack.Pop();
         }
-
+        static int[] RandomIdxOrder(int count)
+        {
+            var rand = new Random();
+            return Enumerable.Range(0, count)
+                             .OrderBy(_ => rand.Next())
+                             .ToArray();
+        }
 
         /// <summary>
         /// 逆ポーランド記法に変換する
@@ -113,11 +144,11 @@ namespace DecisionTableLib.FormulaAnalyzer
             var opStack = new Stack<string>();// 演算子スタック(一時的)
 
             // 演算子の優先順位を定義
-            int Precedence(string op) => op == "*" ? 2 : (op == "+" ? 1 : 0);//*..2, +..1, それ以外は0
+            int Precedence(string op) => op == "*" ? 2 : ((op == "+" || op =="<") ? 1 : 0);
 
             foreach (var token in tokens)
             {
-                if (token == "*" || token == "+")
+                if (token == "*" || token == "+" || token == "<")
                 {
                     // トークンが演算子の場合、スタックのトップの演算子と比較
                     while (opStack.Any() && Precedence(opStack.Peek()) >= Precedence(token))
