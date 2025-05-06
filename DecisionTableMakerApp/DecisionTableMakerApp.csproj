@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DecisionTableLib\DecisionTableLib.csproj" />
+    <ProjectReference Include="..\ExcelAccessLib\ExcelAccessLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,7 +6,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:DecisionTableMakerApp"
         mc:Ignorable="d"
-        Title="DecisionTableMaker" Height="800" Width="1024">
+        Title="{Binding Title}" Height="800" Width="1024">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300"/>
@@ -90,7 +90,14 @@
                         </RichTextBox>
                     </GroupBox>
                     <GroupBox Header="ディシジョンテーブル" Grid.Row="1">
-                        <DataGrid x:Name="DataGrid" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Button Grid.Row="0" Content="Excel出力" Width="64" Command="{Binding ExportExcelCommand}" HorizontalAlignment="Left"/>
+                            <DataGrid x:Name="DataGrid" Grid.Row="1" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
+                        </Grid>
                     </GroupBox>
                 </Grid>
             </GroupBox>
