@@ -167,6 +167,12 @@ namespace DecisionTableMakerApp.ViewModel
             return new ExcelFile(CreateNewDecisionTable, property, sheetPropertyList).Export(fileName);
         }
 
+        private void ShowMessageBoxWithImage(string msg, string imagePath)
+        {
+            var window = new MessageWithFigWindow(msg, imagePath);
+            window.Owner = System.Windows.Application.Current.MainWindow;
+            window.ShowDialog();
+        }
 
         /// <summary>
         /// 検査観点,計算式を書いたExcelの範囲コピーを読み込んで、決定表を作成する
@@ -180,10 +186,7 @@ namespace DecisionTableMakerApp.ViewModel
             if (!checkResult.IsOk)
             {
                 var errMessage = $"{checkResult.ErrorMsg}\n" + "観点と計算式の2列をクリップボードにコピーしてから実行してください。";
-
-                var window = new MessageWithFigWindow(errMessage, "pack://application:,,,/Assets/example_kanten_keisanshiki.png");
-                window.Owner = System.Windows.Application.Current.MainWindow;
-                window.ShowDialog();
+                ShowMessageBoxWithImage(checkResult.ErrorMsg, "pack://application:,,,/Assets/example_kanten_keisanshiki.png");
                 return;
             }
 
@@ -307,7 +310,8 @@ namespace DecisionTableMakerApp.ViewModel
             var checkResult = ExcelRange.CheckIfExcelCopiedText(text);
             if (!checkResult.IsOk)
             {
-                MessageBox.Show(checkResult.ErrorMsg, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                var errMessage = $"{checkResult.ErrorMsg}\n" + "因子と水準の2列をクリップボードにコピーしてから実行してください。";
+                ShowMessageBoxWithImage(checkResult.ErrorMsg, "pack://application:,,,/Assets/example_factor_level.png");
                 return;
             }
 

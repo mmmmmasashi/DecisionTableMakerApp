@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\example_factor_level.png" />
     <None Remove="Assets\example_kanten_keisanshiki.png" />
   </ItemGroup>
 
@@ -22,6 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\example_factor_level.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Assets\example_kanten_keisanshiki.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
