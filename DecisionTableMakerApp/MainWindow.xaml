@@ -57,12 +57,17 @@
 
             <!-- 計算式グループ -->
             <GroupBox Grid.Row="0" Header="計算式">
-                <StackPanel Orientation="Horizontal">
-                    <TextBox Name="formulaTextBox"
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Name="formulaTextBox" Grid.Column="0" MinWidth="100" TextWrapping="Wrap"
                     Text="{Binding FormulaText.Value, Mode=TwoWay,
                     UpdateSourceTrigger=PropertyChanged}"/>
-                    <Button Content="オプション" Width="100" Command="{Binding ShowOptionSettingCommand}"/>
-                </StackPanel>
+                    
+                    <Button Grid.Column="1" Content="オプション" Width="64" MaxHeight="32" Command="{Binding ShowOptionSettingCommand}"/>
+                </Grid>
             </GroupBox>
 
             <!-- GridSplitter -->
