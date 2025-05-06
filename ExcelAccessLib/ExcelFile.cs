@@ -6,14 +6,21 @@ namespace ExcelAccessLib
 {
     public class ExcelFile
     {
+        private readonly Func<string, DataTable> _decisionTableCreator;
         private readonly ExcelBookProperty _excelProperty;
-        private readonly DataTable _decisionTable;
         private readonly List<ExcelSheetProperty> _sheetPropertyList;
 
-        public ExcelFile(DataTable decisionTable, ExcelBookProperty excelProperty, List<ExcelSheetProperty> sheetPropertyList)
+        /// <summary>
+        /// Excelファイル出力クラス
+        /// </summary>
+        /// <param name="decisionTableCreator">計算式を入れるとDataTableを出力するFunc</param>
+        public ExcelFile(
+            Func<string, DataTable> decisionTableCreator,
+            ExcelBookProperty excelProperty,
+            List<ExcelSheetProperty> sheetPropertyList)
         {
+            _decisionTableCreator = decisionTableCreator;
             _excelProperty = excelProperty;
-            _decisionTable = decisionTable;
             _sheetPropertyList = sheetPropertyList;
         }
 
@@ -83,12 +90,13 @@ namespace ExcelAccessLib
             //DataTable全体を追加する
             int leftTopRowIdx = rowIdx;
             int leftTopColIdx = ToDecisionTableColIdx(0);
-            if (_decisionTable != null)
+            var decitionTable = _decisionTableCreator(sheetProperty.Formula);
+            if (decitionTable != null)
             {
                 // DataTableのデータを追加
-                foreach (DataRow row in _decisionTable.Rows)
+                foreach (DataRow row in decitionTable.Rows)
                 {
-                    for (int colIdx = 0; colIdx < _decisionTable.Columns.Count; colIdx++)
+                    for (int colIdx = 0; colIdx < decitionTable.Columns.Count; colIdx++)
                     {
                         worksheet.Cell(rowIdx, ToDecisionTableColIdx(colIdx)).Value = row[colIdx]?.ToString();
                     }
@@ -96,7 +104,7 @@ namespace ExcelAccessLib
                 }
             }
             int rightBottomRowIdx = rowIdx - 1;
-            int rightBottomColIdx = ToDecisionTableColIdx(_decisionTable.Columns.Count - 1);
+            int rightBottomColIdx = ToDecisionTableColIdx(decitionTable.Columns.Count - 1);
 
             var tableRange = worksheet.Range(leftTopRowIdx, leftTopColIdx, rightBottomRowIdx, rightBottomColIdx);
 

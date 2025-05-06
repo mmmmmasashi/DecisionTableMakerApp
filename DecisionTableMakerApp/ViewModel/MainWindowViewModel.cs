@@ -24,7 +24,6 @@ namespace DecisionTableMakerApp.ViewModel
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ImportTableCommand { get; }
-        public ReactiveCommand CreateDecisionTableCommand { get; }
         public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ExportMultiSheetExcelCommand { get; } = new ReactiveCommand();
 
@@ -68,9 +67,6 @@ namespace DecisionTableMakerApp.ViewModel
 
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
-
-            CreateDecisionTableCommand = new ReactiveCommand();
-            CreateDecisionTableCommand.Subscribe(_ => CreateDecisionTable());
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
             FactorAndLevelTreeItems.Add(new TreeNode("root"));//これがないと要素観点表無の時に動かない
@@ -157,7 +153,7 @@ namespace DecisionTableMakerApp.ViewModel
 
             var sheetPropertyList = new List<ExcelSheetProperty>() { new ExcelSheetProperty(inspection, inspection, formula) };
 
-            new ExcelFile(DecisionTable.Value, property, sheetPropertyList).Export(fileName);
+            new ExcelFile(CreateNewDecisionTable, property, sheetPropertyList).Export(fileName);
         }
 
 
@@ -202,7 +198,7 @@ namespace DecisionTableMakerApp.ViewModel
                     return new ExcelSheetProperty(sheetName, pair.Inspection, pair.Formula);
                 }).ToList();
 
-                new ExcelFile(DecisionTable.Value, excelProperty, sheetProperties).Export(fileName);
+                new ExcelFile(CreateNewDecisionTable, excelProperty, sheetProperties).Export(fileName);
                 StartExcel(fileName);
             }
             catch (Exception ex)
@@ -238,51 +234,36 @@ namespace DecisionTableMakerApp.ViewModel
             _additionalRowSettings = LoadAdditionalRowSettings();
         }
 
+        DataTable CreateNewDecisionTable(string formula)
+        {
+            var rootNode = FactorAndLevelTreeItems.FirstOrDefault();
+
+            DecisionTableMaker decisionTableMaker = new DecisionTableMaker(
+                new FactorLevelTable(rootNode), PlusMode.FillEven, _isIgnoreWhiteSpace);
+            var decisionTable = decisionTableMaker.CreateFrom(formula);
+            ParsedResultText.Value = decisionTable.ToString();
+            return new DecisionTableFormatter(decisionTable).ToDataTable().FormatToAppView(_additionalRowSettings);
+
+        }
+
         private void UpdateTable()
         {
             if (FactorAndLevelTreeItems == null) return;
 
-            var rootNode = FactorAndLevelTreeItems.FirstOrDefault();
-
-            DecisionTableMaker decisionTableMaker = new DecisionTableMaker(new FactorLevelTable(rootNode), PlusMode.FillEven, _isIgnoreWhiteSpace);
-
-            var text = FormulaText.Value;
+            bool updateSuccess = false;
             try
             {
-                var decisionTable = decisionTableMaker.CreateFrom(text);
-                ParsedResultText.Value = decisionTable.ToString();
-                DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable()
-                    .FormatToAppView(_additionalRowSettings);
-                SaveAll();
+                var formula = FormulaText.Value;
+                DecisionTable.Value = CreateNewDecisionTable(formula);
+                updateSuccess = true;
             }
             catch (Exception ex)
             {
                 //異常な文字列を入力した場合は、解析エラーであることだけ通知
                 ParsedResultText.Value = "解析エラー" + Environment.NewLine + ex.Message;
             }
-        }
 
-        private void CreateDecisionTable()
-        {
-
-            if (FactorAndLevelTreeItems.Count() == 0)
-            {
-                MessageBox.Show("決定表を作成するための因子と水準の情報がありません。");
-                return;
-            }
-
-            var text = Clipboard.GetText();
-            var factorAndLevelRootNode = FactorAndLevelTreeItems.First();
-
-            var factorLevelTable = new FactorLevelTable(factorAndLevelRootNode);
-            var maker = new DecisionTableMaker(factorLevelTable);
-            DecisionTable decisionTable = maker.CreateFrom(FormulaText.Value);
-
-            string tsvDesitionTable = decisionTable.ToTsv();
-            Clipboard.SetText(tsvDesitionTable);
-
-            //完了メッセージ
-            MessageBox.Show("決定表を作成しました。クリップボードにコピーしています", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (updateSuccess) SaveAll();
         }
 
         private void ImportFactorAndLevelTableData()
