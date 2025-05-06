@@ -179,7 +179,11 @@ namespace DecisionTableMakerApp.ViewModel
             var checkResult = ExcelRange.CheckIfExcelCopiedText(text);
             if (!checkResult.IsOk)
             {
-                MessageBox.Show(checkResult.ErrorMsg, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                var errMessage = $"{checkResult.ErrorMsg}\n" + "観点と計算式の2列をクリップボードにコピーしてから実行してください。";
+
+                var window = new MessageWithFigWindow(errMessage, "pack://application:,,,/Assets/example_kanten_keisanshiki.png");
+                window.Owner = System.Windows.Application.Current.MainWindow;
+                window.ShowDialog();
                 return;
             }
 

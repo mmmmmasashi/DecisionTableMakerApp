@@ -9,12 +9,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\example_kanten_keisanshiki.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ReactiveProperty" Version="9.7.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DecisionTableLib\DecisionTableLib.csproj" />
     <ProjectReference Include="..\ExcelAccessLib\ExcelAccessLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\example_kanten_keisanshiki.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
