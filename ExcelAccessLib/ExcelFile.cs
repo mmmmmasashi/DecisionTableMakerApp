@@ -1,19 +1,43 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using System.Collections.Generic;
 using System.Data;
 namespace ExcelAccessLib
 {
+    //シート作成時の例外
+    public class ExcelSheetCreateException : System.Exception
+    {
+        public int SheetNumber { get; }
+        public string SheetName { get; }
+        
+        public ExcelSheetCreateException(int sheetNumber, string sheetName, Exception ex) : base(ex.Message, ex)
+        {
+            SheetNumber = sheetNumber;
+            SheetName = sheetName;
+        }
+    }
+
     public class ExcelFile
     {
-        private readonly ExcelProperty _excelProperty;
-        private readonly DataTable _decisionTable;
+        private readonly Func<string, DataTable> _decisionTableCreator;
+        private readonly ExcelBookProperty _excelProperty;
+        private readonly List<ExcelSheetProperty> _sheetPropertyList;
 
-        public ExcelFile(DataTable decisionTable, ExcelProperty excelProperty)
+        /// <summary>
+        /// Excelファイル出力クラス
+        /// </summary>
+        /// <param name="decisionTableCreator">計算式を入れるとDataTableを出力するFunc</param>
+        public ExcelFile(
+            Func<string, DataTable> decisionTableCreator,
+            ExcelBookProperty excelProperty,
+            List<ExcelSheetProperty> sheetPropertyList)
         {
+            _decisionTableCreator = decisionTableCreator;
             _excelProperty = excelProperty;
-            _decisionTable = decisionTable;
+            _sheetPropertyList = sheetPropertyList;
         }
 
-        public void Export(string targetFilePath)
+        public List<ExcelSheetCreateException> Export(string targetFilePath)
         {
             //親フォルダがなければ例外
             var parentDir = System.IO.Path.GetDirectoryName(targetFilePath);
@@ -22,24 +46,73 @@ namespace ExcelAccessLib
                 throw new System.IO.DirectoryNotFoundException($"親フォルダが存在しません: {parentDir}");
             }
 
-            XLWorkbook workbook = CreateWorkbook();
+            (XLWorkbook workbook, List<ExcelSheetCreateException> sheetExceptions) = CreateWorkbook();
 
             // ファイルを保存
             workbook.SaveAs(targetFilePath);
+
+            return sheetExceptions;
         }
 
-        private XLWorkbook CreateWorkbook()
+        private (XLWorkbook, List<ExcelSheetCreateException>) CreateWorkbook()
         {
+            var sheetExceptions = new List<ExcelSheetCreateException>();
+
             // 新しいExcelワークブックを作成
             var workbook = new XLWorkbook();
 
+            for (int sheetIdx = 0; sheetIdx < _sheetPropertyList.Count; sheetIdx++)
+            {
+                try
+                {
+                    AddWorksheet(workbook, sheetIdx);
+                }
+                catch (ExcelSheetCreateException excelException)
+                {
+                    sheetExceptions.Add(excelException);
+                }
+                catch(Exception ex)
+                {
+                    sheetExceptions.Add(new ExcelSheetCreateException(sheetIdx + 1,"unknown", ex));
+                }
+            }
+
+            return (workbook, sheetExceptions);
+        }
+
+        private void AddWorksheet(XLWorkbook workbook, int sheetIdx)
+        {
+            var sheetProperty = _sheetPropertyList[sheetIdx];
             // 新しいワークシートを追加
-            var truncatedSheetName = TruncSheetName(_excelProperty.SheetName);
+            var truncatedSheetName = TruncSheetName(sheetProperty.SheetName);
             var worksheet = workbook.Worksheets.Add(truncatedSheetName);
 
             //タイトル
             int rowIdx = 1;
-            worksheet.Cell(rowIdx++, 1).Value = _excelProperty.Title;
+            rowIdx = WriteHeader(sheetProperty, worksheet, rowIdx);
+
+            //情報追記
+            rowIdx = WriteProperties(sheetProperty, worksheet, rowIdx);
+
+            //1行あける
+            rowIdx++;
+
+            rowIdx = WriteDecitionTable(sheetProperty, worksheet, rowIdx, sheetIdx);
+        }
+
+        private static int WriteProperties(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx)
+        {
+            worksheet.Cell(rowIdx, 2).Value = "検査観点";
+            worksheet.Cell(rowIdx++, 4).Value = sheetProperty.Inspection;
+
+            worksheet.Cell(rowIdx, 2).Value = "計算式";
+            worksheet.Cell(rowIdx++, 4).Value = sheetProperty.Formula;
+            return rowIdx;
+        }
+
+        private int WriteHeader(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx)
+        {
+            worksheet.Cell(rowIdx++, 1).Value = sheetProperty.SheetName;
 
             const int RightSideAtrCol = 9;
             const int RightSideValCol = RightSideAtrCol + 2;
@@ -51,29 +124,39 @@ namespace ExcelAccessLib
             worksheet.Cell(rowIdx++, RightSideValCol).Value = _excelProperty.ExportTime.ToString("yyyy/MM/dd HH:mm:ss");
 
             rowIdx++;
+            return rowIdx;
+        }
 
-            //_excelProperty.Propertiesの内容を追加。Property数は可変であることに注意
-            //列はBにkey, Dにvalue
-            foreach (var keyValPair in _excelProperty.Properties)
-            {
-                worksheet.Cell(rowIdx, 2).Value = keyValPair.Key;
-                worksheet.Cell(rowIdx, 4).Value = keyValPair.Value;
-                rowIdx++;
-            }
-
-            //1行あける
-            rowIdx++;
-
-            //_decisionTableの内容を追加
+        private int WriteDecitionTable(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx, int sheetIdx)
+        {
             //DataTable全体を追加する
             int leftTopRowIdx = rowIdx;
             int leftTopColIdx = ToDecisionTableColIdx(0);
-            if (_decisionTable != null)
+
+            DataTable decisionTable;
+            try
+            {
+                decisionTable = _decisionTableCreator(sheetProperty.Formula);
+            }
+            catch (Exception ex)
+            {
+                //Excelにもエラー内容を書き込む
+                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(0)).Value = $"エラー";
+                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(1)).Value = $"{ex.Message}";
+
+                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(0)).Value = $"スタックトレース";
+                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(1)).Value = $"{ex.StackTrace}";
+
+                //その上で終了
+                throw new ExcelSheetCreateException(sheetIdx + 1, sheetProperty.SheetName, ex);
+            }
+
+            if (decisionTable != null)
             {
                 // DataTableのデータを追加
-                foreach (DataRow row in _decisionTable.Rows)
+                foreach (DataRow row in decisionTable.Rows)
                 {
-                    for (int colIdx = 0; colIdx < _decisionTable.Columns.Count; colIdx++)
+                    for (int colIdx = 0; colIdx < decisionTable.Columns.Count; colIdx++)
                     {
                         worksheet.Cell(rowIdx, ToDecisionTableColIdx(colIdx)).Value = row[colIdx]?.ToString();
                     }
@@ -81,14 +164,14 @@ namespace ExcelAccessLib
                 }
             }
             int rightBottomRowIdx = rowIdx - 1;
-            int rightBottomColIdx = ToDecisionTableColIdx(_decisionTable.Columns.Count - 1);
+            int rightBottomColIdx = ToDecisionTableColIdx(decisionTable.Columns.Count - 1);
 
             var tableRange = worksheet.Range(leftTopRowIdx, leftTopColIdx, rightBottomRowIdx, rightBottomColIdx);
+
             //格子状の罫線を引く
             tableRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;  // 外枠
             tableRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;   // 内部線
-
-            return workbook;
+            return rowIdx;
         }
 
         /// <summary>

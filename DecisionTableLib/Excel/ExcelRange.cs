@@ -5,18 +5,31 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DecisionTableLib.Excel
 {
     public class ExcelRange
     {
-        private readonly List<List<string>> _columns;
+        private readonly string _rangeTsvText;
 
         public ExcelRange(string rangeTsvText)
         {
-            var rawRows = ToTable(rangeTsvText);
-            var rawColumns = ConvertColumnAndRow(rawRows);
-            _columns = FullFillTable(rawColumns);
+            _rangeTsvText = rangeTsvText;
+        }
+
+        public static (bool IsOk, string ErrorMsg) CheckIfExcelCopiedText(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return (false, "クリップボードにテキストがありません。Excelのセルを範囲指定してコピーしてからクリックしてください。");
+            }
+
+            if (!(text.Contains("\t") && text.Contains("\r\n")))
+            {
+                return (false, "クリップボードのテキストが正しい形式ではありません。Excelのセルを範囲指定してコピーしてからクリックしてください。");
+            }
+            return (true, string.Empty);
         }
 
         /// <summary>
@@ -70,12 +83,15 @@ namespace DecisionTableLib.Excel
             return convertedTable;
         }
 
+        /// <summary>
+        /// TSV形式のテキストを行列に変換する
+        /// </summary>
         private List<List<string>> ToTable(string rangeTsvText)
         {
             var lines = rangeTsvText.Split('\n');
             var table = lines
-                .Where(line => !string.IsNullOrWhiteSpace(line))
-                .Select(line => line.TrimEnd('\r').Split('\t').ToList())
+                .Where(line => !string.IsNullOrWhiteSpace(line))//空行は無視
+                .Select(line => line.TrimEnd('\r').Split('\t').ToList())//タブで区切ったリストにする
                 .ToList();
 
             return table;
@@ -97,19 +113,23 @@ namespace DecisionTableLib.Excel
             //   L English
             //   L Chinese
 
+            var rawRows = ToTable(_rangeTsvText);
+            var rawColumns = ConvertColumnAndRow(rawRows);
+            List<List<string>> columns = FullFillTable(rawColumns);
+
             // ルートノードを作成
             var root = new TreeNode("root");
 
             //最上位の列が子要素
-            var nodes_Layer1 = _columns[0]
+            var nodes_Layer1 = columns[0]
                 .Distinct()
                 .Where(name => string.IsNullOrEmpty(name) == false)
                 .Select(name => new TreeNode(name));
             root.Children.AddRange(nodes_Layer1);
 
             //左隣の名前と同じのが親ノード
-            var column1 = _columns[0];
-            var column2 = _columns[1];
+            var column1 = columns[0];
+            var column2 = columns[1];
 
             for(int i = 0; i < column1.Count; i++)
             {
@@ -129,5 +149,20 @@ namespace DecisionTableLib.Excel
             return root;
         }
 
+        /// <summary>
+        /// 検査観点とその計算式のリストに変換する
+        /// </summary>
+        public List<(string Inspection, string Formula)> ToInspectionAndFormulaList()
+        {
+            var rawRows = ToTable(_rangeTsvText);
+
+            //観点,計算式なので2列しかないはず。それ以外は例外
+            if (rawRows.Any(rawRow => rawRow.Count != 2))
+            {
+                throw new ArgumentException("観点, 計算式の2列のセルをコピーしてから実行してください");
+            }
+
+            return rawRows.Select(row => (row[0], row[1])).ToList();
+        }
     }
 }
