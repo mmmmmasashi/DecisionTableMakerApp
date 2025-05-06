@@ -95,7 +95,10 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Button Grid.Row="0" Content="Excel出力" Width="64" Command="{Binding ExportExcelCommand}" HorizontalAlignment="Left"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Excel単一出力" Width="Auto" Command="{Binding ExportExcelCommand}" HorizontalAlignment="Left"/>
+                                <Button Content="Excel一括出力" Width="Auto" Command="{Binding ExportMultiSheetExcelCommand}" HorizontalAlignment="Left"/>
+                            </StackPanel>
                             <DataGrid x:Name="DataGrid" Grid.Row="1" AutoGenerateColumns="True" ItemsSource="{Binding DecisionTable.Value}" />
                         </Grid>
                     </GroupBox>

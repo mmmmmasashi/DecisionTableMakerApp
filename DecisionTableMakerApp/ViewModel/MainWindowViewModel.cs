@@ -25,6 +25,7 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveCommand ImportTableCommand { get; }
         public ReactiveCommand CreateDecisionTableCommand { get; }
         public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
+        public ReactiveCommand ExportMultiSheetExcelCommand { get; } = new ReactiveCommand();
 
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
@@ -61,62 +62,8 @@ namespace DecisionTableMakerApp.ViewModel
                 }
             });
 
-            ExportExcelCommand.Subscribe(_ =>
-            {
-                //検査観点・作成者を入力するダイアログを表示
-                var inputWindow = new ExportInfoWindow();
-                inputWindow.Owner = System.Windows.Application.Current.MainWindow;
-                inputWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                bool? isOk = inputWindow.ShowDialog();
-                if (isOk != true) return;
-
-                //出力ファイル名を作成
-                //{作成時}_検査観点_{検査観点}.xlsx
-                //例) 12/24 12:34:56に作成した場合
-                //20231224123456_観点_〇〇が××であること.xlsx
-                var exportTime = DateTime.Now;
-                var defaultFileName = exportTime.ToString("yyyyMMddHHmmss") + "_観点_" + inputWindow.Inspection + ".xlsx";
-
-                //出力先となるファイル名をユーザーに入力してもらう
-                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
-                {
-                    Filter = "Excel Files (*.xlsx)|*.xlsx",
-                    Title = "Save Excel File",
-                    FileName = $"{defaultFileName}"
-                };
-                if (saveFileDialog.ShowDialog() != true) return;
-                //選択されたファイル名を取得
-                string fileName = saveFileDialog.FileName;
-
-                //Excelに出力
-                try
-                {
-                    var property = new ExcelProperty(
-                        inputWindow.TitleText,
-                        inputWindow.TitleText,
-                        inputWindow.Author,
-                        exportTime,
-                        new Dictionary<string, string>() {
-                            { "検査観点", inputWindow.Inspection },
-                            { "計算式", FormulaText.Value }
-                        });
-
-                    new ExcelFile(DecisionTable.Value, property).Export(fileName);
-
-                    //Excelを開く
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = fileName,
-                        UseShellExecute = true
-                    });
-
-                }
-                catch (Exception)
-                {
-                    //失敗メッセージを表示
-                    MessageBox.Show("Excelの出力に失敗しました。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            });
+            ExportExcelCommand.Subscribe(ExportPreviewedExcel);
+            ExportMultiSheetExcelCommand.Subscribe(ExportMultiSheetExcel);
 
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
@@ -140,6 +87,79 @@ namespace DecisionTableMakerApp.ViewModel
             _isInitialized = true;
         }
 
+        /// <summary>
+        /// 表示中の決定表をExcelに出力する
+        /// </summary>
+        private void ExportPreviewedExcel()
+        {
+            //検査観点・作成者を入力するダイアログを表示
+            var inputWindow = new ExportInfoWindow();
+            inputWindow.Owner = System.Windows.Application.Current.MainWindow;
+            inputWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            bool? isOk = inputWindow.ShowDialog();
+            if (isOk != true) return;
+
+            //出力ファイル名を作成
+            //{作成時}_検査観点_{検査観点}.xlsx
+            //例) 12/24 12:34:56に作成した場合
+            //20231224123456_観点_〇〇が××であること.xlsx
+            var exportTime = DateTime.Now;
+            var defaultFileName = exportTime.ToString("yyyyMMddHHmmss") + "_観点_" + inputWindow.Inspection + ".xlsx";
+
+            //出力先となるファイル名をユーザーに入力してもらう
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx",
+                Title = "Save Excel File",
+                FileName = $"{defaultFileName}"
+            };
+            if (saveFileDialog.ShowDialog() != true) return;
+            //選択されたファイル名を取得
+            string fileName = saveFileDialog.FileName;
+
+            //Excelに出力
+            try
+            {
+                ExportExcelSingleSheetFile(inputWindow.TitleText, inputWindow.Title, inputWindow.Author, inputWindow.Inspection, FormulaText.Value, exportTime, fileName);
+
+                //Excelを開く
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception)
+            {
+                //失敗メッセージを表示
+                MessageBox.Show("Excelの出力に失敗しました。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ExportExcelSingleSheetFile(string sheetName, string title, string author, string inspection, string formula, DateTime exportTime, string fileName)
+        {
+            var property = new ExcelProperty(
+                sheetName,
+                title,
+                author,
+                exportTime,
+                new Dictionary<string, string>() {
+                            { "検査観点", inspection },
+                            { "計算式", formula }
+                });
+
+            new ExcelFile(DecisionTable.Value, property).Export(fileName);
+        }
+
+
+        /// <summary>
+        /// 検査観点,計算式を書いたExcelの範囲コピーを読み込んで、決定表を作成する
+        /// Excelファイルは1つで、シート数が複数
+        /// </summary>
+        private void ExportMultiSheetExcel()
+        {
+
+        }
 
         private IEnumerable<(string, string)> LoadAdditionalRowSettings()
         {
