@@ -84,7 +84,6 @@ namespace DecisionTableMakerApp.ViewModel
                 //Excelに出力
                 try
                 {
-                    var tableToExport = RemoveFirstLineForExport(DecisionTable.Value);
                     var property = new ExcelProperty(
                         "Sheet1",
                         inputWindow.TitleText,
@@ -94,7 +93,7 @@ namespace DecisionTableMakerApp.ViewModel
                             { "計算式", FormulaText.Value }
                         });
 
-                    new ExcelFile(tableToExport, property).Export(fileName);
+                    new ExcelFile(DecisionTable.Value, property).Export(fileName);
                     //完了メッセージを表示
                     MessageBox.Show("Excelの出力が完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -127,23 +126,6 @@ namespace DecisionTableMakerApp.ViewModel
             _isInitialized = true;
         }
 
-        /// <summary>
-        /// セルをコピーしたときに範囲に入れるために、列名を1行目に埋め込んでいた。
-        /// これはExcel出力する際は邪魔になるので1行目を削除する。その上で上に詰める。
-        /// もとのDataTableは変更しない。
-        /// </summary>
-        private DataTable RemoveFirstLineForExport(DataTable value)
-        {
-            //出力用DataTbleをコピーして作成
-            var exportTable = value.Copy();
-
-            if (exportTable.Rows.Count <= 0) throw new InvalidDataException("ディシジョンテーブルが空です");
-            
-            //1行目を削除
-            exportTable.Rows.RemoveAt(0);
-
-            return exportTable;
-        }
 
         private IEnumerable<(string, string)> LoadAdditionalRowSettings()
         {

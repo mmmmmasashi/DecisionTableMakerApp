@@ -67,13 +67,6 @@ namespace ExcelAccessLib
             //DataTable全体を追加する
             if (_decisionTable != null)
             {
-                // DataTableの列ヘッダーを追加
-                int tableStartRow = rowIdx;
-                for (int colIdx = 0; colIdx < _decisionTable.Columns.Count; colIdx++)
-                {
-                    worksheet.Cell(rowIdx, ToDecisionTableColIdx(colIdx)).Value = _decisionTable.Columns[colIdx].ColumnName;
-                }
-                rowIdx++;
 
                 // DataTableのデータを追加
                 foreach (DataRow row in _decisionTable.Rows)
