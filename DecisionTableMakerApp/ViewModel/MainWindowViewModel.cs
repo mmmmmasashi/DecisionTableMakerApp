@@ -7,6 +7,7 @@ using DecisionTableLib.Trees;
 using DecisionTableMakerApp.View;
 using ExcelAccessLib;
 using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
 using System;
 using System.Collections.ObjectModel;
 using System.Configuration;
@@ -80,7 +81,9 @@ namespace DecisionTableMakerApp.ViewModel
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
             FactorAndLevelTreeItems.Add(new TreeNode("root"));//これがないと要素観点表無の時に動かない
-            FormulaText.Subscribe(text => UpdateTable());
+            FormulaText.Throttle(TimeSpan.FromMilliseconds(300)) // 300ms のデバウンスを適用。期間内の新しいイベント発生時は最後のイベントのみを処理する
+                       .ObserveOnUIDispatcher() // UI スレッドで実行
+                       .Subscribe(_ => UpdateTable());
 
             // 前回保存されたテキストを読み込む
             var lastText = Properties.Settings.Default.LastFactorLevelText;
