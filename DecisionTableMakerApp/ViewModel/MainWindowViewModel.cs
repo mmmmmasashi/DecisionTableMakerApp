@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Enumeration;
 using System.Reactive.Linq;
 using System.Windows;
 using static System.Net.Mime.MediaTypeNames;
@@ -87,6 +88,20 @@ namespace DecisionTableMakerApp.ViewModel
             _isInitialized = true;
         }
 
+        private (bool IsOk, string FilePath) ShowInputFilePath(string defaultFileName)
+        {
+
+            //出力先となるファイル名をユーザーに入力してもらう
+            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Excel Files (*.xlsx)|*.xlsx",
+                Title = "Save Excel File",
+                FileName = $"{defaultFileName}"
+            };
+            if (saveFileDialog.ShowDialog() != true) return (false, string.Empty);
+            return (true, saveFileDialog.FileName);
+        }
+
         /// <summary>
         /// 表示中の決定表をExcelに出力する
         /// </summary>
@@ -106,28 +121,16 @@ namespace DecisionTableMakerApp.ViewModel
             var exportTime = DateTime.Now;
             var defaultFileName = exportTime.ToString("yyyyMMddHHmmss") + "_観点_" + inputWindow.Inspection + ".xlsx";
 
-            //出力先となるファイル名をユーザーに入力してもらう
-            var saveFileDialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Filter = "Excel Files (*.xlsx)|*.xlsx",
-                Title = "Save Excel File",
-                FileName = $"{defaultFileName}"
-            };
-            if (saveFileDialog.ShowDialog() != true) return;
-            //選択されたファイル名を取得
-            string fileName = saveFileDialog.FileName;
+            (bool success, string fileName) = ShowInputFilePath(defaultFileName);
+            if (!success) return;
 
             //Excelに出力
             try
             {
-                ExportExcelSingleSheetFile(inputWindow.TitleText, inputWindow.Title, inputWindow.Author, inputWindow.Inspection, FormulaText.Value, exportTime, fileName);
+                ExportExcelSingleSheetFile(inputWindow.Author, inputWindow.Inspection, FormulaText.Value, exportTime, fileName);
 
                 //Excelを開く
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    UseShellExecute = true
-                });
+                StartExcel(fileName);
             }
             catch (Exception)
             {
@@ -136,19 +139,25 @@ namespace DecisionTableMakerApp.ViewModel
             }
         }
 
-        private void ExportExcelSingleSheetFile(string sheetName, string title, string author, string inspection, string formula, DateTime exportTime, string fileName)
+        private void StartExcel(string fileName)
         {
-            var property = new ExcelProperty(
-                sheetName,
-                title,
-                author,
-                exportTime,
-                new Dictionary<string, string>() {
-                            { "検査観点", inspection },
-                            { "計算式", formula }
-                });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = fileName,
+                UseShellExecute = true
+            });
+        }
 
-            new ExcelFile(DecisionTable.Value, property).Export(fileName);
+        private void ExportExcelSingleSheetFile(string author, string inspection, string formula, DateTime exportTime, string fileName)
+        {
+            var property = new ExcelBookProperty(
+                author,
+                exportTime
+                );
+
+            var sheetPropertyList = new List<ExcelSheetProperty>() { new ExcelSheetProperty(inspection, inspection, formula) };
+
+            new ExcelFile(DecisionTable.Value, property, sheetPropertyList).Export(fileName);
         }
 
 
@@ -158,7 +167,49 @@ namespace DecisionTableMakerApp.ViewModel
         /// </summary>
         private void ExportMultiSheetExcel()
         {
+            //Excelの範囲をコピーしたテキストかチェック
+            var text = Clipboard.GetText();
+            var checkResult = ExcelRange.CheckIfExcelCopiedText(text);
+            if (!checkResult.IsOk)
+            {
+                MessageBox.Show(checkResult.ErrorMsg, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
+            var range = new ExcelRange(text);
+            List<(string Inspection, string Formula)> inspectionAndFormulaPairList = range.ToInspectionAndFormulaList();
+
+            var exportTime = DateTime.Now;
+
+            //TODO:プロパティ
+            var excelProperty = new ExcelBookProperty(
+                "作成者",
+                exportTime
+            );
+
+            //出力ファイル名を作成
+            var defaultFileName = exportTime.ToString("yyyyMMddHHmmss") + "_ディシジョンテーブル.xlsx";
+
+            (bool success, string fileName) = ShowInputFilePath(defaultFileName);
+            if (!success) return;
+
+            try
+            {
+                int sheetNumber = 1;
+                var sheetProperties = inspectionAndFormulaPairList.Select(pair =>
+                {
+                    var sheetName = $"No.{sheetNumber++}_{pair.Inspection}";
+                    return new ExcelSheetProperty(sheetName, pair.Inspection, pair.Formula);
+                }).ToList();
+
+                new ExcelFile(DecisionTable.Value, excelProperty, sheetProperties).Export(fileName);
+                StartExcel(fileName);
+            }
+            catch (Exception ex)
+            {
+                //エラー表示
+                MessageBox.Show("Excelの出力に失敗しました。" + Environment.NewLine + ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private IEnumerable<(string, string)> LoadAdditionalRowSettings()
@@ -237,15 +288,10 @@ namespace DecisionTableMakerApp.ViewModel
         private void ImportFactorAndLevelTableData()
         {
             var text = Clipboard.GetText();
-            if (string.IsNullOrEmpty(text))
+            var checkResult = ExcelRange.CheckIfExcelCopiedText(text);
+            if (!checkResult.IsOk)
             {
-                MessageBox.Show("クリップボードにテキストがありません。Excelのセルを範囲指定してコピーしてからクリックしてください。");
-                return;
-            }
-
-            if (!(text.Contains("\t") && text.Contains("\r\n")))
-            {
-                MessageBox.Show("クリップボードのテキストが正しい形式ではありません。Excelのセルを範囲指定してコピーしてからクリックしてください。");
+                MessageBox.Show(checkResult.ErrorMsg, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 

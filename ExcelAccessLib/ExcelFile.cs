@@ -1,16 +1,20 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using System.Collections.Generic;
 using System.Data;
 namespace ExcelAccessLib
 {
     public class ExcelFile
     {
-        private readonly ExcelProperty _excelProperty;
+        private readonly ExcelBookProperty _excelProperty;
         private readonly DataTable _decisionTable;
+        private readonly List<ExcelSheetProperty> _sheetPropertyList;
 
-        public ExcelFile(DataTable decisionTable, ExcelProperty excelProperty)
+        public ExcelFile(DataTable decisionTable, ExcelBookProperty excelProperty, List<ExcelSheetProperty> sheetPropertyList)
         {
             _excelProperty = excelProperty;
             _decisionTable = decisionTable;
+            _sheetPropertyList = sheetPropertyList;
         }
 
         public void Export(string targetFilePath)
@@ -33,13 +37,24 @@ namespace ExcelAccessLib
             // 新しいExcelワークブックを作成
             var workbook = new XLWorkbook();
 
+            for (int sheetIdx = 0; sheetIdx < _sheetPropertyList.Count; sheetIdx++)
+            {
+                AddWorksheet(workbook, sheetIdx);
+            }
+
+            return workbook;
+        }
+
+        private void AddWorksheet(XLWorkbook workbook, int sheetIdx)
+        {
+            var sheetProperty = _sheetPropertyList[sheetIdx];
             // 新しいワークシートを追加
-            var truncatedSheetName = TruncSheetName(_excelProperty.SheetName);
+            var truncatedSheetName = TruncSheetName(sheetProperty.SheetName);
             var worksheet = workbook.Worksheets.Add(truncatedSheetName);
 
             //タイトル
             int rowIdx = 1;
-            worksheet.Cell(rowIdx++, 1).Value = _excelProperty.Title;
+            worksheet.Cell(rowIdx++, 1).Value = sheetProperty.SheetName;
 
             const int RightSideAtrCol = 9;
             const int RightSideValCol = RightSideAtrCol + 2;
@@ -54,12 +69,12 @@ namespace ExcelAccessLib
 
             //_excelProperty.Propertiesの内容を追加。Property数は可変であることに注意
             //列はBにkey, Dにvalue
-            foreach (var keyValPair in _excelProperty.Properties)
-            {
-                worksheet.Cell(rowIdx, 2).Value = keyValPair.Key;
-                worksheet.Cell(rowIdx, 4).Value = keyValPair.Value;
-                rowIdx++;
-            }
+
+            worksheet.Cell(rowIdx, 2).Value = "検査観点";
+            worksheet.Cell(rowIdx++, 4).Value = sheetProperty.Inspection;
+
+            worksheet.Cell(rowIdx, 2).Value = "計算式";
+            worksheet.Cell(rowIdx++, 4).Value = sheetProperty.Formula;
 
             //1行あける
             rowIdx++;
@@ -84,11 +99,10 @@ namespace ExcelAccessLib
             int rightBottomColIdx = ToDecisionTableColIdx(_decisionTable.Columns.Count - 1);
 
             var tableRange = worksheet.Range(leftTopRowIdx, leftTopColIdx, rightBottomRowIdx, rightBottomColIdx);
+
             //格子状の罫線を引く
             tableRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;  // 外枠
             tableRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;   // 内部線
-
-            return workbook;
         }
 
         /// <summary>

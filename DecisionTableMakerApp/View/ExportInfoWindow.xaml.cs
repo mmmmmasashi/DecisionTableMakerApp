@@ -6,7 +6,6 @@ namespace DecisionTableMakerApp.View
     public partial class ExportInfoWindow : Window
     {
         private ExportInfoWindowViewModel _vm;
-        public string TitleText { get => _vm.TitleText.Value; }
         public string Inspection { get => _vm.InspectionText.Value; }
         public string Author { get => _vm.AuthorText.Value; }
 
@@ -23,7 +22,7 @@ namespace DecisionTableMakerApp.View
 
         private void FocusFirstTextBox()
         {
-            TitleTextBox.Focus();
+            InspectionTextBox.Focus();
         }
     }
 }
