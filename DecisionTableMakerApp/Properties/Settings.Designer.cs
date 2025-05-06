@@ -95,5 +95,17 @@ namespace DecisionTableMakerApp.Properties {
                 this["LastInspection"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        public string RandomSearchNum {
+            get {
+                return ((string)(this["RandomSearchNum"]));
+            }
+            set {
+                this["RandomSearchNum"] = value;
+            }
+        }
     }
 }

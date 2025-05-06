@@ -21,7 +21,7 @@
 
         <!-- TextBox の共通スタイル -->
         <Style TargetType="TextBox">
-            <Setter Property="Margin" Value="8,8,8,0"/>
+            <Setter Property="Margin" Value="8,0,8,0"/>
         </Style>
 
         <!-- RichTextBox の共通スタイル -->
