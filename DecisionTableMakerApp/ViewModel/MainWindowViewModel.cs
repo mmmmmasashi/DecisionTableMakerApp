@@ -19,10 +19,8 @@ namespace DecisionTableMakerApp.ViewModel
     internal class MainWindowViewModel
     {
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
-        public ObservableCollection<AdditionalRowSetting> AdditionalRowSettings { get; private set; } = new ObservableCollection<AdditionalRowSetting>();
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ImportTableCommand { get; }
-        public ReactiveCommand AddAdditionalRowCommand { get; }
         public ReactiveCommand CreateDecisionTableCommand { get; }
 
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
@@ -37,23 +35,11 @@ namespace DecisionTableMakerApp.ViewModel
         private readonly bool _isInitialized = false;
         private bool _isIgnoreWhiteSpace = false;
 
-
-        private void DeleteAdditionalRowSetting(AdditionalRowSetting targetSetting)
-        {
-            AdditionalRowSettings.Remove(targetSetting);
-        }
-
-        private void AddNewRowSetting(string col1Text, string col2Text)
-        {
-            var newRowSetting = new AdditionalRowSetting(DeleteAdditionalRowSetting, UpdateTable, col1Text, col2Text);
-            AdditionalRowSettings.Add(newRowSetting);
-        }
-
         public MainWindowViewModel()
         {
             //設定値を読み込む
             _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
-            _additionalRowSettings = InitializeAdditionalRowSettings();
+            _additionalRowSettings = LoadAdditionalRowSettings();
 
             ShowOptionSettingCommand.Subscribe(_ =>
             {
@@ -67,16 +53,6 @@ namespace DecisionTableMakerApp.ViewModel
                     UpdateTable();
                 }
             });
-
-            AddAdditionalRowCommand = new ReactiveCommand();
-            AddAdditionalRowCommand.Subscribe(_ => AddNewRowSetting("", ""));
-
-            foreach (var rowSetting in _additionalRowSettings)
-            {
-                AddNewRowSetting(rowSetting.Item1, rowSetting.Item2);
-            }
-
-            AdditionalRowSettings.CollectionChanged += (sender, args) => UpdateTable();
 
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
@@ -101,10 +77,8 @@ namespace DecisionTableMakerApp.ViewModel
         }
 
 
-        private IEnumerable<(string, string)> InitializeAdditionalRowSettings()
+        private IEnumerable<(string, string)> LoadAdditionalRowSettings()
         {
-            AdditionalRowSettings = new ObservableCollection<AdditionalRowSetting>();
-
             string settingStr = Properties.Settings.Default.LastAdditionalSettings;
             settingStr ??= "結果|実施日||実施者||結果"; // デフォルト値
 
@@ -119,8 +93,6 @@ namespace DecisionTableMakerApp.ViewModel
             if (!_isInitialized) return;
 
             //保存する
-            var str = AdditionalRowSettings.Select(setting => (setting.Col1Text.Value, setting.Col2Text.Value)).ToList();
-            Properties.Settings.Default.LastAdditionalSettings = new PropertyList().ToPropertyString(str);
             Properties.Settings.Default.LastFormulaText = FormulaText.Value;
             Properties.Settings.Default.LastFactorLevelText = _latestFactorLevelTable;
 
@@ -149,7 +121,7 @@ namespace DecisionTableMakerApp.ViewModel
                 var decisionTable = decisionTableMaker.CreateFrom(text);
                 ParsedResultText.Value = decisionTable.ToString();
                 DecisionTable.Value = new DecisionTableFormatter(decisionTable).ToDataTable()
-                    .FormatToAppView(AdditionalRowSettings);
+                    .FormatToAppView(_additionalRowSettings);
                 SaveAll();
             }
             catch (Exception ex)
@@ -218,20 +190,20 @@ namespace DecisionTableMakerApp.ViewModel
         /// <summary>
         /// 列名を1行目に埋め込む。元々の1行目以降は2行目以降に移動する。
         /// </summary>
-        public static DataTable FormatToAppView(this DataTable originalTable, IEnumerable<AdditionalRowSetting> additionalRowSettings)
+        public static DataTable FormatToAppView(this DataTable originalTable, IEnumerable<(string, string)> additionalRowSettings)
         {
             var table = IncludeColumnNameToCell(originalTable);
             AddNewRows(table, additionalRowSettings);
             return table;
         }
 
-        private static void AddNewRows(DataTable table, IEnumerable<AdditionalRowSetting> additionalRowSettings)
+        private static void AddNewRows(DataTable table, IEnumerable<(string, string)> additionalRowSettings)
         {
             foreach (var newRowSetting in additionalRowSettings)
             {
                 var newRow = table.NewRow();
-                newRow[0] = newRowSetting.Col1Text.Value;
-                newRow[1] = newRowSetting.Col2Text.Value;
+                newRow[0] = newRowSetting.Item1;
+                newRow[1] = newRowSetting.Item2;
                 table.Rows.Add(newRow);
             }
         }
