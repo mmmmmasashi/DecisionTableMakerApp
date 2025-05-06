@@ -33,5 +33,11 @@
         <Style TargetType="TreeView">
             <Setter Property="Margin" Value="8,8,8,0"/>
         </Style>
+        
+        <!-- DataGridの共通スタイル -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Margin" Value="8,8,8,0"/>
+        </Style>
+
     </Application.Resources>
 </Application>

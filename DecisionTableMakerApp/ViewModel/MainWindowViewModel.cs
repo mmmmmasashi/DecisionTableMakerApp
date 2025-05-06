@@ -5,6 +5,7 @@ using DecisionTableLib.Format;
 using DecisionTableLib.FormulaAnalyzer;
 using DecisionTableLib.Trees;
 using DecisionTableMakerApp.View;
+using ExcelAccessLib;
 using Reactive.Bindings;
 using System;
 using System.Collections.ObjectModel;
@@ -22,6 +23,7 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ImportTableCommand { get; }
         public ReactiveCommand CreateDecisionTableCommand { get; }
+        public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
 
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
@@ -57,6 +59,8 @@ namespace DecisionTableMakerApp.ViewModel
                     UpdateTable();
                 }
             });
+
+            ExportExcelCommand.Subscribe(_ => new ExcelFile().Export());
 
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
