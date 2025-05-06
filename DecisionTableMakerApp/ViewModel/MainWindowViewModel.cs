@@ -27,7 +27,7 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveProperty<string> ParsedResultText { get; set; } = new ReactiveProperty<string>("");
 
         public ReactiveProperty<DataTable> DecisionTable { get; set; } = new ReactiveProperty<DataTable>(new DataTable());
-
+        public string Title { get; }
         //設定値
         private IEnumerable<(string, string)> _additionalRowSettings;
 
@@ -37,6 +37,10 @@ namespace DecisionTableMakerApp.ViewModel
 
         public MainWindowViewModel()
         {
+            //バージョン表示
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            Title = $"Decision Table Maker v{version}";
+
             //設定値を読み込む
             _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
             _additionalRowSettings = LoadAdditionalRowSettings();
