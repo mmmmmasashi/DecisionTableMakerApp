@@ -4,6 +4,19 @@ using System.Collections.Generic;
 using System.Data;
 namespace ExcelAccessLib
 {
+    //シート作成時の例外
+    public class ExcelSheetCreateException : System.Exception
+    {
+        public int SheetNumber { get; }
+        public string SheetName { get; }
+        
+        public ExcelSheetCreateException(int sheetNumber, string sheetName, Exception ex) : base(ex.Message, ex)
+        {
+            SheetNumber = sheetNumber;
+            SheetName = sheetName;
+        }
+    }
+
     public class ExcelFile
     {
         private readonly Func<string, DataTable> _decisionTableCreator;
@@ -24,7 +37,7 @@ namespace ExcelAccessLib
             _sheetPropertyList = sheetPropertyList;
         }
 
-        public void Export(string targetFilePath)
+        public List<ExcelSheetCreateException> Export(string targetFilePath)
         {
             //親フォルダがなければ例外
             var parentDir = System.IO.Path.GetDirectoryName(targetFilePath);
@@ -33,23 +46,38 @@ namespace ExcelAccessLib
                 throw new System.IO.DirectoryNotFoundException($"親フォルダが存在しません: {parentDir}");
             }
 
-            XLWorkbook workbook = CreateWorkbook();
+            (XLWorkbook workbook, List<ExcelSheetCreateException> sheetExceptions) = CreateWorkbook();
 
             // ファイルを保存
             workbook.SaveAs(targetFilePath);
+
+            return sheetExceptions;
         }
 
-        private XLWorkbook CreateWorkbook()
+        private (XLWorkbook, List<ExcelSheetCreateException>) CreateWorkbook()
         {
+            var sheetExceptions = new List<ExcelSheetCreateException>();
+
             // 新しいExcelワークブックを作成
             var workbook = new XLWorkbook();
 
             for (int sheetIdx = 0; sheetIdx < _sheetPropertyList.Count; sheetIdx++)
             {
-                AddWorksheet(workbook, sheetIdx);
+                try
+                {
+                    AddWorksheet(workbook, sheetIdx);
+                }
+                catch (ExcelSheetCreateException excelException)
+                {
+                    sheetExceptions.Add(excelException);
+                }
+                catch(Exception ex)
+                {
+                    sheetExceptions.Add(new ExcelSheetCreateException(sheetIdx + 1,"unknown", ex));
+                }
             }
 
-            return workbook;
+            return (workbook, sheetExceptions);
         }
 
         private void AddWorksheet(XLWorkbook workbook, int sheetIdx)
@@ -69,7 +97,7 @@ namespace ExcelAccessLib
             //1行あける
             rowIdx++;
 
-            rowIdx = WriteDecitionTable(sheetProperty, worksheet, rowIdx);
+            rowIdx = WriteDecitionTable(sheetProperty, worksheet, rowIdx, sheetIdx);
         }
 
         private static int WriteProperties(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx)
@@ -99,18 +127,36 @@ namespace ExcelAccessLib
             return rowIdx;
         }
 
-        private int WriteDecitionTable(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx)
+        private int WriteDecitionTable(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx, int sheetIdx)
         {
             //DataTable全体を追加する
             int leftTopRowIdx = rowIdx;
             int leftTopColIdx = ToDecisionTableColIdx(0);
-            var decitionTable = _decisionTableCreator(sheetProperty.Formula);
-            if (decitionTable != null)
+
+            DataTable decisionTable;
+            try
+            {
+                decisionTable = _decisionTableCreator(sheetProperty.Formula);
+            }
+            catch (Exception ex)
+            {
+                //Excelにもエラー内容を書き込む
+                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(0)).Value = $"エラー";
+                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(1)).Value = $"{ex.Message}";
+
+                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(0)).Value = $"スタックトレース";
+                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(1)).Value = $"{ex.StackTrace}";
+
+                //その上で終了
+                throw new ExcelSheetCreateException(sheetIdx + 1, sheetProperty.SheetName, ex);
+            }
+
+            if (decisionTable != null)
             {
                 // DataTableのデータを追加
-                foreach (DataRow row in decitionTable.Rows)
+                foreach (DataRow row in decisionTable.Rows)
                 {
-                    for (int colIdx = 0; colIdx < decitionTable.Columns.Count; colIdx++)
+                    for (int colIdx = 0; colIdx < decisionTable.Columns.Count; colIdx++)
                     {
                         worksheet.Cell(rowIdx, ToDecisionTableColIdx(colIdx)).Value = row[colIdx]?.ToString();
                     }
@@ -118,7 +164,7 @@ namespace ExcelAccessLib
                 }
             }
             int rightBottomRowIdx = rowIdx - 1;
-            int rightBottomColIdx = ToDecisionTableColIdx(decitionTable.Columns.Count - 1);
+            int rightBottomColIdx = ToDecisionTableColIdx(decisionTable.Columns.Count - 1);
 
             var tableRange = worksheet.Range(leftTopRowIdx, leftTopColIdx, rightBottomRowIdx, rightBottomColIdx);
 

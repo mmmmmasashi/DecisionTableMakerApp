@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Enumeration;
 using System.Reactive.Linq;
+using System.Text;
 using System.Windows;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -126,7 +127,12 @@ namespace DecisionTableMakerApp.ViewModel
             //Excelに出力
             try
             {
-                ExportExcelSingleSheetFile(AuthorText.Value, inputWindow.Inspection, FormulaText.Value, exportTime, fileName);
+                var exceptions = ExportExcelSingleSheetFile(AuthorText.Value, inputWindow.Inspection, FormulaText.Value, exportTime, fileName);
+
+                if (exceptions.Count > 0)
+                {
+                    throw exceptions[0];
+                }
 
                 //Excelを開く
                 StartExcel(fileName);
@@ -140,6 +146,8 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void StartExcel(string fileName)
         {
+            if (!File.Exists(fileName)) return;
+
             Process.Start(new ProcessStartInfo
             {
                 FileName = fileName,
@@ -147,7 +155,7 @@ namespace DecisionTableMakerApp.ViewModel
             });
         }
 
-        private void ExportExcelSingleSheetFile(string author, string inspection, string formula, DateTime exportTime, string fileName)
+        private List<ExcelSheetCreateException> ExportExcelSingleSheetFile(string author, string inspection, string formula, DateTime exportTime, string fileName)
         {
             var property = new ExcelBookProperty(
                 author,
@@ -156,7 +164,7 @@ namespace DecisionTableMakerApp.ViewModel
 
             var sheetPropertyList = new List<ExcelSheetProperty>() { new ExcelSheetProperty(inspection, inspection, formula) };
 
-            new ExcelFile(CreateNewDecisionTable, property, sheetPropertyList).Export(fileName);
+            return new ExcelFile(CreateNewDecisionTable, property, sheetPropertyList).Export(fileName);
         }
 
 
@@ -200,7 +208,19 @@ namespace DecisionTableMakerApp.ViewModel
                     return new ExcelSheetProperty(sheetName, pair.Inspection, pair.Formula);
                 }).ToList();
 
-                new ExcelFile(CreateNewDecisionTable, excelProperty, sheetProperties).Export(fileName);
+                var exceptions = new ExcelFile(CreateNewDecisionTable, excelProperty, sheetProperties).Export(fileName);
+                if (exceptions.Count > 0)
+                {
+                    //エラーがあった場合はその一覧を表示
+                    var errorMsg = new StringBuilder();
+
+                    errorMsg.AppendLine("出力時に以下のエラーが発生しました");
+                    foreach (var exception in exceptions)
+                    {
+                        errorMsg.AppendLine($"番号: {exception.SheetNumber} シート名: {exception.SheetName} エラー内容: {exception.Message}");
+                    }
+                    MessageBox.Show(errorMsg.ToString(), "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
                 StartExcel(fileName);
             }
             catch (Exception ex)
