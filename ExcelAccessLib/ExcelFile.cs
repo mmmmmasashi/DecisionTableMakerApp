@@ -47,7 +47,7 @@ namespace ExcelAccessLib
             worksheet.Cell(rowIdx++, RightSideValCol).Value = _excelProperty.Author;
 
             worksheet.Cell(rowIdx, RightSideAtrCol).Value = "新規作成日時";
-            worksheet.Cell(rowIdx++, RightSideValCol).Value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+            worksheet.Cell(rowIdx++, RightSideValCol).Value = _excelProperty.ExportTime.ToString("yyyy/MM/dd HH:mm:ss");
 
             rowIdx++;
 

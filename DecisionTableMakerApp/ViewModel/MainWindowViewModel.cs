@@ -70,12 +70,19 @@ namespace DecisionTableMakerApp.ViewModel
                 bool? isOk = inputWindow.ShowDialog();
                 if (isOk != true) return;
 
+                //出力ファイル名を作成
+                //{作成時}_検査観点_{検査観点}.xlsx
+                //例) 12/24 12:34:56に作成した場合
+                //20231224123456_観点_〇〇が××であること.xlsx
+                var exportTime = DateTime.Now;
+                var defaultFileName = exportTime.ToString("yyyyMMddHHmmss") + "_観点_" + inputWindow.Inspection + ".xlsx";
+
                 //出力先となるファイル名をユーザーに入力してもらう
                 var saveFileDialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Filter = "Excel Files (*.xlsx)|*.xlsx",
                     Title = "Save Excel File",
-                    FileName = "DecisionTable.xlsx"
+                    FileName = $"{defaultFileName}"
                 };
                 if (saveFileDialog.ShowDialog() != true) return;
                 //選択されたファイル名を取得
@@ -88,14 +95,21 @@ namespace DecisionTableMakerApp.ViewModel
                         "Sheet1",
                         inputWindow.TitleText,
                         inputWindow.Author,
+                        exportTime,
                         new Dictionary<string, string>() {
                             { "検査観点", inputWindow.Inspection },
                             { "計算式", FormulaText.Value }
                         });
 
                     new ExcelFile(DecisionTable.Value, property).Export(fileName);
-                    //完了メッセージを表示
-                    MessageBox.Show("Excelの出力が完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    //Excelを開く
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = fileName,
+                        UseShellExecute = true
+                    });
+
                 }
                 catch (Exception)
                 {
