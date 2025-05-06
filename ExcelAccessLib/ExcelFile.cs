@@ -61,6 +61,29 @@ namespace ExcelAccessLib
 
             //タイトル
             int rowIdx = 1;
+            rowIdx = WriteHeader(sheetProperty, worksheet, rowIdx);
+
+            //情報追記
+            rowIdx = WriteProperties(sheetProperty, worksheet, rowIdx);
+
+            //1行あける
+            rowIdx++;
+
+            rowIdx = WriteDecitionTable(sheetProperty, worksheet, rowIdx);
+        }
+
+        private static int WriteProperties(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx)
+        {
+            worksheet.Cell(rowIdx, 2).Value = "検査観点";
+            worksheet.Cell(rowIdx++, 4).Value = sheetProperty.Inspection;
+
+            worksheet.Cell(rowIdx, 2).Value = "計算式";
+            worksheet.Cell(rowIdx++, 4).Value = sheetProperty.Formula;
+            return rowIdx;
+        }
+
+        private int WriteHeader(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx)
+        {
             worksheet.Cell(rowIdx++, 1).Value = sheetProperty.SheetName;
 
             const int RightSideAtrCol = 9;
@@ -73,20 +96,11 @@ namespace ExcelAccessLib
             worksheet.Cell(rowIdx++, RightSideValCol).Value = _excelProperty.ExportTime.ToString("yyyy/MM/dd HH:mm:ss");
 
             rowIdx++;
+            return rowIdx;
+        }
 
-            //_excelProperty.Propertiesの内容を追加。Property数は可変であることに注意
-            //列はBにkey, Dにvalue
-
-            worksheet.Cell(rowIdx, 2).Value = "検査観点";
-            worksheet.Cell(rowIdx++, 4).Value = sheetProperty.Inspection;
-
-            worksheet.Cell(rowIdx, 2).Value = "計算式";
-            worksheet.Cell(rowIdx++, 4).Value = sheetProperty.Formula;
-
-            //1行あける
-            rowIdx++;
-
-            //_decisionTableの内容を追加
+        private int WriteDecitionTable(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx)
+        {
             //DataTable全体を追加する
             int leftTopRowIdx = rowIdx;
             int leftTopColIdx = ToDecisionTableColIdx(0);
@@ -111,6 +125,7 @@ namespace ExcelAccessLib
             //格子状の罫線を引く
             tableRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;  // 外枠
             tableRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;   // 内部線
+            return rowIdx;
         }
 
         /// <summary>
