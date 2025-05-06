@@ -9,6 +9,7 @@ using ExcelAccessLib;
 using Reactive.Bindings;
 using System;
 using System.Collections.ObjectModel;
+using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -41,6 +42,7 @@ namespace DecisionTableMakerApp.ViewModel
         private string _latestFactorLevelTable;
         private readonly bool _isInitialized = false;
         private bool _isIgnoreWhiteSpace = false;
+        private int _randomSearchNum;
 
         public MainWindowViewModel()
         {
@@ -53,6 +55,7 @@ namespace DecisionTableMakerApp.ViewModel
             //設定値を読み込む
             _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
             _additionalRowSettings = LoadAdditionalRowSettings();
+            _randomSearchNum = LoadRandomSearchNum();
 
             ShowOptionSettingCommand.Subscribe(_ =>
             {
@@ -87,6 +90,20 @@ namespace DecisionTableMakerApp.ViewModel
             FormulaText.Value = Properties.Settings.Default.LastFormulaText;
 
             _isInitialized = true;
+        }
+
+        private int LoadRandomSearchNum()
+        {
+            const int DefaultVal = 100;
+            if (string.IsNullOrEmpty(Properties.Settings.Default.RandomSearchNum)) return DefaultVal;
+            if (int.TryParse(Properties.Settings.Default.RandomSearchNum, out int randomSearchNum))
+            {
+                return randomSearchNum;
+            }
+            else
+            {
+                return DefaultVal;
+            }
         }
 
         private (bool IsOk, string FilePath) ShowInputFilePath(string defaultFileName)
@@ -268,11 +285,9 @@ namespace DecisionTableMakerApp.ViewModel
             Properties.Settings.Default.Save();
         }
 
-        /// <summary>
-        /// TODO: 他の設定値も
-        /// </summary>
         private void LoadSettings()
         {
+            _randomSearchNum = LoadRandomSearchNum();
             _isIgnoreWhiteSpace = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
             _additionalRowSettings = LoadAdditionalRowSettings();
         }
@@ -282,7 +297,7 @@ namespace DecisionTableMakerApp.ViewModel
             var rootNode = FactorAndLevelTreeItems.FirstOrDefault();
 
             DecisionTableMaker decisionTableMaker = new DecisionTableMaker(
-                new FactorLevelTable(rootNode), PlusMode.FillEven, _isIgnoreWhiteSpace);
+                new FactorLevelTable(rootNode), PlusMode.FillEven, _isIgnoreWhiteSpace, _randomSearchNum);
             var decisionTable = decisionTableMaker.CreateFrom(formula);
             ParsedResultText.Value = decisionTable.ToString();
             return (new DecisionTableFormatter(decisionTable).ToDataTable().FormatToAppView(_additionalRowSettings), decisionTable);

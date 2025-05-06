@@ -18,11 +18,17 @@
         <Grid Grid.Row="0" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <CheckBox Content="空白は無視" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}" Margin="0,0,0,10"/>
+            <CheckBox Grid.Row="0" Content="計算式で空白は無視する" IsChecked="{Binding IsIgnoreWhiteSpace.Value, Mode=TwoWay}" Margin="0,0,0,10"/>
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <TextBlock Text="演算子「&lt;」での探索回数" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding RandomSearchNum.Value}" Width="100"/>
+                <TextBlock Text="回"/>
+            </StackPanel>
             <!-- 他の設定項目をここに追加可能 -->
-            <GroupBox Grid.Row="1" Header="最終行に追加するテキスト">
+            <GroupBox Grid.Row="2" Header="最終行に追加するテキスト">
                 <ScrollViewer>
                     <StackPanel>
                         <ItemsControl ItemsSource="{Binding AdditionalRowSettings}">

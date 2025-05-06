@@ -13,7 +13,9 @@ namespace DecisionTableMakerApp.ViewModel
 {
     public class OptionSettingWindowViewModel
     {
+        private readonly int RandomSearchMinNum = 1;
 
+        public ReactiveProperty<string> RandomSearchNum { get; } = new ReactiveProperty<string>("10");
         public ReactiveProperty<bool> IsIgnoreWhiteSpace { get; } = new ReactiveProperty<bool>();
         public ObservableCollection<AdditionalRowSetting> AdditionalRowSettings { get; private set; } = new ObservableCollection<AdditionalRowSetting>();
 
@@ -33,6 +35,18 @@ namespace DecisionTableMakerApp.ViewModel
                 if (!IsChanged())
                 {
                     CloseThisWindow(false);
+                    return;
+                }
+
+                if (!int.TryParse(RandomSearchNum.Value, out int randomSearchNum))
+                {
+                    MessageBox.Show("試行回数は数値で入力してください", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (randomSearchNum < RandomSearchMinNum)
+                {
+                    MessageBox.Show($"試行回数は{RandomSearchMinNum}以上の値を入力してください", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -56,6 +70,16 @@ namespace DecisionTableMakerApp.ViewModel
             //空白を無視するかどうかの設定を読み込む
             IsIgnoreWhiteSpace.Value = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
 
+            //試行回数の設定を読み込む
+            RandomSearchNum.Value = "100";
+            if (int.TryParse(Properties.Settings.Default.RandomSearchNum, out int randomSearchNum))
+            {
+                if (randomSearchNum >= RandomSearchMinNum)
+                {
+                    RandomSearchNum.Value = Properties.Settings.Default.RandomSearchNum;
+                }
+            }
+
             //行設定を読み込む
             var rowSettings = new AdditionalRowProperty().FromProperty(Properties.Settings.Default.LastAdditionalSettings);
             AdditionalRowSettings.Clear();
@@ -73,6 +97,8 @@ namespace DecisionTableMakerApp.ViewModel
 
         private bool IsChanged()
         {
+            //試行回数が変更されているか
+            if (Properties.Settings.Default.RandomSearchNum != RandomSearchNum.Value) return true;
             if (Properties.Settings.Default.LastIsIgnoreWhiteSpace != IsIgnoreWhiteSpace.Value) return true;
 
             var str = AdditionalRowSettings.Select(setting => (setting.Col1Text.Value, setting.Col2Text.Value)).ToList();
@@ -86,7 +112,7 @@ namespace DecisionTableMakerApp.ViewModel
             //保存する
             var str = AdditionalRowSettings.Select(setting => (setting.Col1Text.Value, setting.Col2Text.Value)).ToList();
             Properties.Settings.Default.LastAdditionalSettings = new AdditionalRowProperty().ToPropertyString(str);
-
+            Properties.Settings.Default.RandomSearchNum = RandomSearchNum.Value;
             Properties.Settings.Default.LastIsIgnoreWhiteSpace = IsIgnoreWhiteSpace.Value;
 
             Properties.Settings.Default.Save();

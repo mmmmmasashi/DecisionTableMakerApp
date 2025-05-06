@@ -11,6 +11,7 @@ namespace DecisionTableLib.Decisions
 {
     public class DecisionTableMaker
     {
+        private readonly int _randomSearchNum;
         private readonly FactorLevelTable _factorLevelTable;
         private readonly bool _evenPlusMode;
         private readonly RPN _rpn;
@@ -19,8 +20,15 @@ namespace DecisionTableLib.Decisions
         public DecisionTableMaker(
             FactorLevelTable factorLevelTable,
             PlusMode plusMode = PlusMode.FillEnd,
-            bool isIgnoreWhiteSpace = true)
+            bool isIgnoreWhiteSpace = true,
+            int randomSearchNum = 100)
         {
+            if (randomSearchNum < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(randomSearchNum), "試行回数は1以上の値を指定してください。");
+            }
+            _randomSearchNum = randomSearchNum;
+
             //TODO:深さ3以上は例外にすること
             this._factorLevelTable = factorLevelTable;
             _rpn = new RPN(plusMode);
@@ -57,7 +65,7 @@ namespace DecisionTableLib.Decisions
 
             int bestScore = int.MaxValue;
             DecisionTable bestDecisionTable = DecisionTable.Empty;
-            int repeatCount = (rpn.Contains("<")) ? 100 : 1;
+            int repeatCount = (rpn.Contains("<")) ? _randomSearchNum : 1;
             for (int i = 0; i < repeatCount; i++)
             {
                 IEnumerable<IEnumerable<(string, string)>> combinations = _rpn.EvaluateRPN(rpn, factors);
