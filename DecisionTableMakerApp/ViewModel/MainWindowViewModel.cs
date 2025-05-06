@@ -60,7 +60,32 @@ namespace DecisionTableMakerApp.ViewModel
                 }
             });
 
-            ExportExcelCommand.Subscribe(_ => new ExcelFile().Export());
+            ExportExcelCommand.Subscribe(_ =>
+            {
+                //出力先となるファイル名をユーザーに入力してもらう
+                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Excel Files (*.xlsx)|*.xlsx",
+                    Title = "Save Excel File",
+                    FileName = "DecisionTable.xlsx"
+                };
+                if (saveFileDialog.ShowDialog() != true) return;
+                //選択されたファイル名を取得
+                string fileName = saveFileDialog.FileName;
+
+                //Excelに出力
+                try
+                {
+                    new ExcelFile().Export(fileName);
+                    //完了メッセージを表示
+                    MessageBox.Show("Excelの出力が完了しました。", "完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception)
+                {
+                    //失敗メッセージを表示
+                    MessageBox.Show("Excelの出力に失敗しました。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            });
 
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
