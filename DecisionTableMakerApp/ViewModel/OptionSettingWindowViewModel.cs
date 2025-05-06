@@ -45,17 +45,6 @@ namespace DecisionTableMakerApp.ViewModel
         }
 
 
-        //TODO : MainWIndowViewModel からのコピペになってる
-        private IEnumerable<(string, string)> LoadAdditionalRowSettings()
-        {
-            string settingStr = Properties.Settings.Default.LastAdditionalSettings;
-            settingStr ??= "結果|実施日||実施者||結果"; // デフォルト値
-
-            return new PropertyList()
-                .FromPropertyString(settingStr)
-                .ToList();
-        }
-
         private void DeleteAdditionalRowSetting(AdditionalRowSetting targetSetting)
         {
             AdditionalRowSettings.Remove(targetSetting);
@@ -68,7 +57,7 @@ namespace DecisionTableMakerApp.ViewModel
             IsIgnoreWhiteSpace.Value = Properties.Settings.Default.LastIsIgnoreWhiteSpace;
 
             //行設定を読み込む
-            var rowSettings = LoadAdditionalRowSettings();
+            var rowSettings = new AdditionalRowProperty().FromProperty(Properties.Settings.Default.LastAdditionalSettings);
             AdditionalRowSettings.Clear();
             foreach (var rowSetting in rowSettings)
             {
@@ -87,7 +76,7 @@ namespace DecisionTableMakerApp.ViewModel
             if (Properties.Settings.Default.LastIsIgnoreWhiteSpace != IsIgnoreWhiteSpace.Value) return true;
 
             var str = AdditionalRowSettings.Select(setting => (setting.Col1Text.Value, setting.Col2Text.Value)).ToList();
-            if (Properties.Settings.Default.LastAdditionalSettings != new PropertyList().ToPropertyString(str)) return true;
+            if (Properties.Settings.Default.LastAdditionalSettings != new AdditionalRowProperty().ToPropertyString(str)) return true;
 
             return false;
         }
@@ -96,7 +85,7 @@ namespace DecisionTableMakerApp.ViewModel
         {
             //保存する
             var str = AdditionalRowSettings.Select(setting => (setting.Col1Text.Value, setting.Col2Text.Value)).ToList();
-            Properties.Settings.Default.LastAdditionalSettings = new PropertyList().ToPropertyString(str);
+            Properties.Settings.Default.LastAdditionalSettings = new AdditionalRowProperty().ToPropertyString(str);
 
             Properties.Settings.Default.LastIsIgnoreWhiteSpace = IsIgnoreWhiteSpace.Value;
 

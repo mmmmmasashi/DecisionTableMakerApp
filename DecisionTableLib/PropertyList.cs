@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace DecisionTableLib
 {
-    public class PropertyList
+    internal class PropertyList
     {
-        public List<(string, string)> FromPropertyString(string originalText)
+        internal List<(string, string)> FromPropertyString(string originalText)
         {
             if (originalText == string.Empty) return new List<(string, string)>() { ("", "") };
 
@@ -34,7 +34,7 @@ namespace DecisionTableLib
 
         }
 
-        public string ToPropertyString(List<(string, string)> settings)
+        internal string ToPropertyString(List<(string, string)> settings)
         {
             const string Separator = "|";
             IEnumerable<string> each = settings.Select(setting => $"{setting.Item1}{Separator}{setting.Item2}");

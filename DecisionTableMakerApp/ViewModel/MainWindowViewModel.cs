@@ -79,12 +79,7 @@ namespace DecisionTableMakerApp.ViewModel
 
         private IEnumerable<(string, string)> LoadAdditionalRowSettings()
         {
-            string settingStr = Properties.Settings.Default.LastAdditionalSettings;
-            settingStr ??= "結果|実施日||実施者||結果"; // デフォルト値
-
-            return new PropertyList()
-                .FromPropertyString(settingStr)
-                .ToList();
+            return new AdditionalRowProperty().FromProperty(Properties.Settings.Default.LastAdditionalSettings);
         }
 
 
