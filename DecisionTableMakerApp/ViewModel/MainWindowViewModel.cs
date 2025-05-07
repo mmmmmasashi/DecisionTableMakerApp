@@ -326,7 +326,7 @@ namespace DecisionTableMakerApp.ViewModel
             catch (Exception ex)
             {
                 //異常な文字列を入力した場合は、解析エラーであることだけ通知
-                ParsedResultText.Value = "解析エラー" + Environment.NewLine + ex.Message;
+                ParsedResultText.Value = "解析エラー:" + ex.Message;
             }
 
             if (updateSuccess) SaveAll();

@@ -111,8 +111,16 @@ namespace DecisionTableLib.FormulaAnalyzer
                 }
                 else
                 {
+                    Factor targetFactor;
                     //水準をテストケースのリストにする( [ [("OS", "Windows")], [("OS", "Mac")], [("OS", "Linux")] ] )
-                    var targetFactor = factors.First(f => f.Name == token);
+                    try
+                    {
+                        targetFactor = factors.First(f => f.Name == token);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidDataException(token + "は、因子リストに存在しません。", ex);
+                    }
                     var values = targetFactor.Levels
                         .Select(level => new List<(string, string)>() { (targetFactor.Name, level.Name) } )
                         .ToList();
