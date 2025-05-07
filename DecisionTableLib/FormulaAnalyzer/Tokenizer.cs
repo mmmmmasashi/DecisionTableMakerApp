@@ -12,27 +12,36 @@ namespace DecisionTableLib.FormulaAnalyzer
         {
             var tokens = new List<string>();
             int i = 0;
-            while (i < expr.Length)
-            {
-                if (char.IsWhiteSpace(expr[i])) { i++; continue; }
 
-                if (expr[i] == '[')
+            try
+            {
+                while (i < expr.Length)
                 {
-                    int j = expr.IndexOf(']', i);
-                    tokens.Add(expr.Substring(i + 1, j - i - 1));
-                    i = j + 1;
+                    if (char.IsWhiteSpace(expr[i])) { i++; continue; }
+
+                    if (expr[i] == '[')
+                    {
+                        int j = expr.IndexOf(']', i);
+                        tokens.Add(expr.Substring(i + 1, j - i - 1));
+                        i = j + 1;
+                    }
+                    else if (expr[i] == '*' || expr[i] == '+' || expr[i] == '<')
+                    {
+                        tokens.Add(expr[i].ToString());
+                        i++;
+                    }
+                    else
+                    {
+                        throw new Exception("Unexpected character in expression");
+                    }
                 }
-                else if (expr[i] == '*' || expr[i] == '+' || expr[i] == '<')
-                {
-                    tokens.Add(expr[i].ToString());
-                    i++;
-                }
-                else
-                {
-                    throw new Exception("Unexpected character in expression");
-                }
+                return tokens;
             }
-            return tokens;
+            catch (Exception ex)
+            {
+                throw new InvalidDataException($"トークン化エラー({i}文字目):括弧, 演算子等が正しいか確認してください。", ex);
+            }
+
         }
     }
 }
