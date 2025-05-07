@@ -57,30 +57,114 @@ namespace ExcelAccessLib
         private (XLWorkbook, List<ExcelSheetCreateException>) CreateWorkbook()
         {
             var sheetExceptions = new List<ExcelSheetCreateException>();
-
+            var sheetSummaries = new Dictionary<int, SheetSummary>();
             // 新しいExcelワークブックを作成
             var workbook = new XLWorkbook();
 
             for (int sheetIdx = 0; sheetIdx < _sheetPropertyList.Count; sheetIdx++)
             {
+                SheetSummary sheetSummary;
+                int sheetNumber = sheetIdx + 1;
                 try
                 {
-                    AddWorksheet(workbook, sheetIdx);
+                    int caseNum = AddWorksheet(workbook, sheetIdx);
+                    sheetSummary = SheetSummary.Success(caseNum);
                 }
                 catch (ExcelSheetCreateException excelException)
                 {
                     sheetExceptions.Add(excelException);
+                    sheetSummary = SheetSummary.Failure(excelException);
                 }
                 catch(Exception ex)
                 {
-                    sheetExceptions.Add(new ExcelSheetCreateException(sheetIdx + 1,"unknown", ex));
+                    var wrappedException = new ExcelSheetCreateException(sheetIdx + 1, "unknown", ex);
+                    sheetExceptions.Add(wrappedException);
+                    sheetSummary = SheetSummary.Failure(wrappedException);
                 }
+
+                sheetSummaries.Add(sheetNumber, sheetSummary);
             }
+
+            // サマリーシートを先頭に追加
+            AddSummarySheet(workbook, sheetSummaries);
 
             return (workbook, sheetExceptions);
         }
 
-        private void AddWorksheet(XLWorkbook workbook, int sheetIdx)
+        private void AddSummarySheet(XLWorkbook workbook, Dictionary<int, SheetSummary> sheetSummaries)
+        {
+            // 新しい「サマリー」シートを作成
+            var summarySheet = workbook.Worksheets.Add("全体", 1); // 先頭に追加
+
+            int rowIdx = 1;
+
+            // 全体情報の記載
+            summarySheet.Cell(rowIdx++, 1).Value = "全体情報";
+
+            summarySheet.Cell(rowIdx, 1).Value = "作成者";
+            summarySheet.Cell(rowIdx++, 2).Value = $"{_excelProperty.Author}";
+
+            summarySheet.Cell(rowIdx, 1).Value = $"作成日時";
+            summarySheet.Cell(rowIdx++, 2).Value = $"{_excelProperty.ExportTime:yyyy/MM/dd HH:mm:ss}";
+
+            //全体情報(解析成功シート数 {successNum}/{totalNum}
+            summarySheet.Cell(rowIdx, 1).Value = $"解析成功観点数";
+            int successNum = sheetSummaries.Values.Count(summary => summary.IsSuccess);
+            int totalNum = sheetSummaries.Values.Count;
+            summarySheet.Cell(rowIdx++, 2).Value = $"{successNum}/{totalNum}";
+
+            //全体情報 総ケース数
+            summarySheet.Cell(rowIdx, 1).Value = $"総ケース数";
+            int totalCaseNum = sheetSummaries.Values.Where(summary => summary.IsSuccess).Sum(summary => summary.CaseNum);
+            summarySheet.Cell(rowIdx++, 2).Value = $"{totalCaseNum}";
+
+            //1行開ける
+            rowIdx++;
+            const int TableColLeftIdx = 2;
+
+            // 各シートの情報を記載
+            summarySheet.Cell(rowIdx++, 1).Value = "シート一覧";
+
+            //ヘッダーの設定
+            int colIdx = TableColLeftIdx;
+            summarySheet.Cell(rowIdx, colIdx++).Value = "No.";//No.
+            summarySheet.Cell(rowIdx, colIdx++).Value = "シート名";//シート名
+            summarySheet.Cell(rowIdx, colIdx++).Value = "検査観点";//検査観点
+            summarySheet.Cell(rowIdx, colIdx++).Value = "計算式";//計算式
+            summarySheet.Cell(rowIdx, colIdx++).Value = "ケース数";//ケース数
+            summarySheet.Cell(rowIdx, colIdx++).Value = "エラーメッセージ";//エラーメッセージ
+            rowIdx++;//1行あける
+
+            //各シートの情報を記載
+            for (int i = 0; i < _sheetPropertyList.Count; i++)
+            {
+                colIdx = TableColLeftIdx;//初期化
+
+                var sheetProperty = _sheetPropertyList[i];
+                int sheetNumber = i + 1;
+                var sheetSummary = sheetSummaries[sheetNumber];
+                summarySheet.Cell(rowIdx, colIdx++).Value = $"{i + 1}";//No.
+                summarySheet.Cell(rowIdx, colIdx++).Value = sheetProperty.SheetName;//シート名
+                summarySheet.Cell(rowIdx, colIdx++).Value = sheetProperty.Inspection;//検査観点
+                summarySheet.Cell(rowIdx, colIdx++).Value = sheetProperty.Formula;//計算式
+                summarySheet.Cell(rowIdx, colIdx++).Value = (sheetSummary.IsSuccess)? sheetSummary.CaseNum : "ERROR";//ケース数
+
+                // 修正箇所: null 参照の可能性があるものの逆参照を防ぐため、null 条件演算子を使用  
+                summarySheet.Cell(rowIdx, colIdx++).Value = (sheetSummary.IsSuccess) ? "" : sheetSummary.SheetCreateException?.Message ?? "エラー情報なし"; // エラーメッセージ  
+                rowIdx++;//改行
+            }
+
+            // サマリーシートのスタイル設定（例: 太字や罫線）
+            var headerRange = summarySheet.Range(1, 1, 1, 4);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        }
+
+        /// <summary>
+        /// Worksheet追加
+        /// </summary>
+        /// <returns>ケース数</returns>
+        private int AddWorksheet(XLWorkbook workbook, int sheetIdx)
         {
             var sheetProperty = _sheetPropertyList[sheetIdx];
             // 新しいワークシートを追加
@@ -97,7 +181,8 @@ namespace ExcelAccessLib
             //1行あける
             rowIdx++;
 
-            rowIdx = WriteDecitionTable(sheetProperty, worksheet, rowIdx, sheetIdx);
+            (rowIdx, int caseNum) = WriteDecitionTable(sheetProperty, worksheet, rowIdx, sheetIdx);
+            return caseNum;
         }
 
         private static int WriteProperties(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx)
@@ -127,16 +212,18 @@ namespace ExcelAccessLib
             return rowIdx;
         }
 
-        private int WriteDecitionTable(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx, int sheetIdx)
+        private (int rowIdx, int caseNum) WriteDecitionTable(ExcelSheetProperty sheetProperty, IXLWorksheet worksheet, int rowIdx, int sheetIdx)
         {
             //DataTable全体を追加する
             int leftTopRowIdx = rowIdx;
             int leftTopColIdx = ToDecisionTableColIdx(0);
 
             DataTable decisionTable;
+            int caseNum = 0;
             try
             {
                 decisionTable = _decisionTableCreator(sheetProperty.Formula);
+                caseNum = decisionTable.Columns.Count - 2;//最初の2列は因子名と水準名 //FIXME: 1行目の末尾の数字を取る方がロバスト
             }
             catch (Exception ex)
             {
@@ -171,7 +258,7 @@ namespace ExcelAccessLib
             //格子状の罫線を引く
             tableRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;  // 外枠
             tableRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;   // 内部線
-            return rowIdx;
+            return (rowIdx, caseNum);
         }
 
         /// <summary>
