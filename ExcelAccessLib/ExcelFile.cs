@@ -228,11 +228,11 @@ namespace ExcelAccessLib
             catch (Exception ex)
             {
                 //Excelにもエラー内容を書き込む
-                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(0)).Value = $"エラー";
+                worksheet.Cell(rowIdx, ToDecisionTableColIdx(0)).Value = $"エラー";
                 worksheet.Cell(rowIdx++, ToDecisionTableColIdx(1)).Value = $"{ex.Message}";
 
-                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(0)).Value = $"スタックトレース";
-                worksheet.Cell(rowIdx++, ToDecisionTableColIdx(1)).Value = $"{ex.StackTrace}";
+                //worksheet.Cell(rowIdx++, ToDecisionTableColIdx(0)).Value = $"スタックトレース";
+                //worksheet.Cell(rowIdx++, ToDecisionTableColIdx(1)).Value = $"{ex.StackTrace}";
 
                 //その上で終了
                 throw new ExcelSheetCreateException(sheetIdx + 1, sheetProperty.SheetName, ex);
