@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using System;
 using System.Collections.Generic;
 using System.Data;
 namespace ExcelAccessLib
@@ -14,6 +15,14 @@ namespace ExcelAccessLib
         {
             SheetNumber = sheetNumber;
             SheetName = sheetName;
+        }
+
+        public string OneLineMessage
+        {
+            get
+            {
+                return $"番号: {this.SheetNumber} シート名: {this.SheetName} エラー内容: {this.Message}";
+            }
         }
     }
 
@@ -37,6 +46,10 @@ namespace ExcelAccessLib
             _sheetPropertyList = sheetPropertyList;
         }
 
+        /// <summary>
+        /// Excelファイルを出力する
+        /// </summary>
+        /// <returns>変換時に起きた各シートの例外のリスト</returns>
         public List<ExcelSheetCreateException> Export(string targetFilePath)
         {
             //親フォルダがなければ例外

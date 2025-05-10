@@ -17,6 +17,7 @@ using System.IO;
 using System.IO.Enumeration;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -29,7 +30,7 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ImportTableCommand { get; }
         public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
-        public ReactiveCommand ExportMultiSheetExcelCommand { get; } = new ReactiveCommand();
+        public ReactiveCommand<Task> ExportMultiSheetExcelCommand { get; } = new ReactiveCommand<Task>();
 
         public ReactiveProperty<string> UncoveredCountText { get; } = new ReactiveProperty<string>("-");
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
@@ -74,7 +75,7 @@ namespace DecisionTableMakerApp.ViewModel
             });
 
             ExportExcelCommand.Subscribe(ExportPreviewedExcel);
-            ExportMultiSheetExcelCommand.Subscribe(ExportMultiSheetExcel);
+            ExportMultiSheetExcelCommand.Subscribe(async _ => await ExportMultiSheetExcel());
 
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
@@ -158,7 +159,7 @@ namespace DecisionTableMakerApp.ViewModel
                 }
 
                 //Excelを開く
-                StartExcel(fileName);
+                LaunchExcel(fileName);
             }
             catch (Exception)
             {
@@ -167,7 +168,7 @@ namespace DecisionTableMakerApp.ViewModel
             }
         }
 
-        private void StartExcel(string fileName)
+        private void LaunchExcel(string fileName)
         {
             if (!File.Exists(fileName)) return;
 
@@ -205,7 +206,7 @@ namespace DecisionTableMakerApp.ViewModel
         /// 検査観点,計算式を書いたExcelの範囲コピーを読み込んで、決定表を作成する
         /// Excelファイルは1つで、シート数が複数
         /// </summary>
-        private void ExportMultiSheetExcel()
+        private async Task ExportMultiSheetExcel()
         {
             //Excelの範囲をコピーしたテキストかチェック
             var text = Clipboard.GetText();
@@ -217,51 +218,84 @@ namespace DecisionTableMakerApp.ViewModel
                 return;
             }
 
+            //必要な情報の取得
             var range = new ExcelRange(text);
             List<(string Inspection, string Formula)> inspectionAndFormulaPairList = range.ToInspectionAndFormulaList();
 
+            //出力ファイル名を作成・ユーザーに保存先を選択してもらう
             var exportTime = DateTime.Now;
-
-            var excelProperty = new ExcelBookProperty(
-                AuthorText.Value,
-                exportTime
-            );
-
-            //出力ファイル名を作成
             var defaultFileName = exportTime.ToString("yyyyMMddHHmmss") + "_ディシジョンテーブル.xlsx";
-
             (bool success, string fileName) = ShowInputFilePath(defaultFileName);
             if (!success) return;
 
+            //プログレスダイアログを表示
+            var thisWindow = System.Windows.Application.Current.MainWindow;
+            var progressWindow = new ProgressWindow(thisWindow, "作成中", "Excelファイルを出力中です。少しお待ちください...");
+            progressWindow.Show();
+
+            List<ExcelSheetCreateException> exceptions = new ();
+
             try
             {
-                int sheetNumber = 1;
-                var sheetProperties = inspectionAndFormulaPairList.Select(pair =>
+                await Task.Run(() =>
                 {
-                    var sheetName = $"No.{sheetNumber++}_{pair.Inspection}";
-                    return new ExcelSheetProperty(sheetName, pair.Inspection, pair.Formula);
-                }).ToList();
-
-                var exceptions = new ExcelFile(CreateNewDecisionDataTable, excelProperty, sheetProperties).Export(fileName);
-                if (exceptions.Count > 0)
-                {
-                    //エラーがあった場合はその一覧を表示
-                    var errorMsg = new StringBuilder();
-
-                    errorMsg.AppendLine("出力時に以下のエラーが発生しました");
-                    foreach (var exception in exceptions)
-                    {
-                        errorMsg.AppendLine($"番号: {exception.SheetNumber} シート名: {exception.SheetName} エラー内容: {exception.Message}");
-                    }
-                    MessageBox.Show(errorMsg.ToString(), "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                StartExcel(fileName);
+                    exceptions = ExportExcelFile(inspectionAndFormulaPairList, exportTime, fileName);
+                });
             }
             catch (Exception ex)
             {
                 //エラー表示
                 MessageBox.Show("Excelの出力に失敗しました。" + Environment.NewLine + ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
+            finally
+            {
+                //プログレスダイアログを閉じる
+                progressWindow.Close();
+            }
+
+            if (exceptions.Count > 0)
+            {
+                //エラーがあった場合はその一覧を表示
+                var errMsg = string.Join(Environment.NewLine, exceptions.Select(e => e.OneLineMessage));
+                var errorWindow = new MessageAndDetailWindow(thisWindow, "変換時に以下のエラーが発生しました", errMsg);
+                errorWindow.ShowDialog();
+            }
+
+            //出力したExcelファイルを開きます
+            var excelFilePath = new ExcelFilePath(fileName);
+            if (excelFilePath.IsExcelFile)
+            {
+                var excelOpeningWindow = new ProgressWindow(
+                    thisWindow, "起動中", "出力したExcelファイルを開いています...");
+                excelOpeningWindow.Show();
+
+                try
+                {
+                    excelFilePath.LaunchExcelWithProcess();
+
+                    //Excelを開くのに時間がかかる場合があるので、少し待つ
+                    await Task.Delay(1000);
+                }
+                finally
+                {
+                    excelOpeningWindow.Close();
+                }
+            }
+        }
+
+        private List<ExcelSheetCreateException> ExportExcelFile(List<(string Inspection, string Formula)> inspectionAndFormulaPairList, DateTime exportTime, string fileName)
+        {
+            var sheetProperties = inspectionAndFormulaPairList
+                .Select((pair, index) =>
+                {
+                    var sheetName = $"No.{index + 1}_{pair.Inspection}";
+                    return new ExcelSheetProperty(sheetName, pair.Inspection, pair.Formula);
+                }).ToList();
+
+            var excelProperty = new ExcelBookProperty(AuthorText.Value, exportTime);
+            var exceptions = new ExcelFile(CreateNewDecisionDataTable, excelProperty, sheetProperties).Export(fileName);
+            return exceptions;
         }
 
         private void SaveAuthor()
