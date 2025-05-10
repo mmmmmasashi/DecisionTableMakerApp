@@ -28,7 +28,7 @@ namespace DecisionTableMakerApp.ViewModel
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
         public ReactiveCommand RefreshCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
-        public ReactiveCommand ImportTableCommand { get; }
+        public ReactiveCommand ImportTableCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
         public ReactiveCommand<Task> ExportMultiSheetExcelCommand { get; } = new ReactiveCommand<Task>();
 
@@ -77,8 +77,7 @@ namespace DecisionTableMakerApp.ViewModel
             ExportExcelCommand.Subscribe(ExportPreviewedExcel);
             ExportMultiSheetExcelCommand.Subscribe(async _ => await ExportMultiSheetExcel());
 
-            ImportTableCommand = new ReactiveCommand();
-            ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
+            ImportTableCommand.Subscribe(ImportFactorAndLevelTableData);
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
             FactorAndLevelTreeItems.Add(new TreeNode("root"));//これがないと要素観点表無の時に動かない
