@@ -32,14 +32,18 @@ namespace DecisionTableMakerApp.ViewModel
     public class ExcelPasteWindowViewModel
     {
         public string Message { get; }
+        public string Col1Name { get; }
+        public string Col2Name { get; }
 
         public ReactiveCommand OkCommand { get; } = new ReactiveCommand();
         public ReactiveCommand CancelCommand { get; } = new ReactiveCommand();
         public ObservableCollection<ExcelRow> Rows { get; set; }
 
-        public ExcelPasteWindowViewModel(string message)
+        public ExcelPasteWindowViewModel(string message, string col1Name, string col2Name)
         {
             Message = message;
+            Col1Name = col1Name;
+            Col2Name = col2Name;
 
             Rows = new ObservableCollection<ExcelRow>();
             for (int i = 0; i < 200; i++)
@@ -53,14 +57,6 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void CloseWindow(bool isOk)
         {
-            foreach (var row in Rows)
-            {
-                if (!string.IsNullOrEmpty(row.ToString()))
-                {
-                    Trace.WriteLine(row.ToString());
-                }
-            }
-
             var window = System.Windows.Application.Current.Windows.OfType<ExcelPasteWindow>().FirstOrDefault();
             if (window != null)
             {

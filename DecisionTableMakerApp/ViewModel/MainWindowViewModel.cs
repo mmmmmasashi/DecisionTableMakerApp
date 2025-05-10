@@ -208,7 +208,7 @@ namespace DecisionTableMakerApp.ViewModel
         /// </summary>
         private async Task ExportMultiSheetExcel()
         {
-            var pasteWindow = new ExcelPasteWindow("検査観点と計算式を入力してください。Excelで範囲選択しての貼り付けも可能です。");
+            var pasteWindow = new ExcelPasteWindow("検査観点と計算式を入力してください。Excelで範囲選択しての貼り付けも可能です。", "検査観点", "ケース計算式");
             var pasted = pasteWindow.ShowDialog();
             if (!(pasted ?? false)) return;
 

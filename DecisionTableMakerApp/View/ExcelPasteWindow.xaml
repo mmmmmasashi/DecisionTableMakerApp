@@ -19,9 +19,9 @@
         <DataGrid Grid.Row="1" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" Margin="0,0,0,10" PreviewKeyDown="DataGrid_PreviewKeyDown">
             <DataGrid.Columns>
                 <!-- 検査観点列 -->
-                <DataGridTextColumn Header="検査観点" Binding="{Binding Field1}" Width="*" CanUserSort="False"/>
+                <DataGridTextColumn Header="{Binding Col1Name}" Binding="{Binding Field1}" Width="*" CanUserSort="False"/>
                 <!-- ケース計算式列 -->
-                <DataGridTextColumn Header="ケース計算式" Binding="{Binding Field2}" Width="*" CanUserSort="False"/>
+                <DataGridTextColumn Header="{Binding Col2Name}" Binding="{Binding Field2}" Width="*" CanUserSort="False"/>
             </DataGrid.Columns>
         </DataGrid>
 
