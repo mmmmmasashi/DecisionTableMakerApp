@@ -25,8 +25,9 @@ namespace DecisionTableMakerApp.View
         public List<ExcelRow> Rows { get => _vm.Rows.ToList(); }
         private ExcelPasteWindowViewModel _vm;
 
-        public ExcelPasteWindow(string message, string col1Name, string col2Name)
+        public ExcelPasteWindow(Window owner, string message, string col1Name, string col2Name)
         {
+            this.Owner = owner;
             InitializeComponent();
             _vm = new ExcelPasteWindowViewModel(message, col1Name, col2Name);
             this.DataContext = _vm;

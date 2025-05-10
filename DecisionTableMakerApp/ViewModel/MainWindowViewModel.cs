@@ -25,6 +25,8 @@ namespace DecisionTableMakerApp.ViewModel
 {
     internal class MainWindowViewModel
     {
+
+        private Window ThisWindow => System.Windows.Application.Current.MainWindow;
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
         public ReactiveCommand RefreshCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
@@ -64,7 +66,7 @@ namespace DecisionTableMakerApp.ViewModel
             ShowOptionSettingCommand.Subscribe(_ =>
             {
                 var optionWindow = new OptionSettingWindow();
-                optionWindow.Owner = System.Windows.Application.Current.MainWindow;
+                optionWindow.Owner = ThisWindow;
                 optionWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 bool? isChanged = optionWindow.ShowDialog();
                 if (isChanged == true)
@@ -207,7 +209,7 @@ namespace DecisionTableMakerApp.ViewModel
         /// </summary>
         private async Task ExportMultiSheetExcel()
         {
-            var pasteWindow = new ExcelPasteWindow("検査観点と計算式を入力してください。Excelで範囲選択しての貼り付けも可能です。", "検査観点", "ケース計算式");
+            var pasteWindow = new ExcelPasteWindow(ThisWindow, "検査観点と計算式を入力してください。Excelで範囲選択しての貼り付けも可能です。", "検査観点", "ケース計算式");
             var pasted = pasteWindow.ShowDialog();
             if (!(pasted ?? false)) return;
 
@@ -377,7 +379,7 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void ImportFactorAndLevelTableData()
         {
-            var window = new ExcelPasteWindow("因子と水準を入力してください。", "因子", "水準");
+            var window = new ExcelPasteWindow(ThisWindow, "因子と水準を入力してください。", "因子", "水準");
             var result = window.ShowDialog();
             if (result != true) return;
 
