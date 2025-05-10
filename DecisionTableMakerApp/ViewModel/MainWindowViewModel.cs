@@ -229,7 +229,8 @@ namespace DecisionTableMakerApp.ViewModel
             if (!success) return;
 
             //プログレスダイアログを表示
-            var progressWindow = new ProgressWindow(System.Windows.Application.Current.MainWindow, "作成中", "Excelファイルを出力中です。少しお待ちください...");
+            var thisWindow = System.Windows.Application.Current.MainWindow;
+            var progressWindow = new ProgressWindow(thisWindow, "作成中", "Excelファイルを出力中です。少しお待ちください...");
             progressWindow.Show();
 
             List<ExcelSheetCreateException> exceptions = new ();
@@ -256,14 +257,9 @@ namespace DecisionTableMakerApp.ViewModel
             if (exceptions.Count > 0)
             {
                 //エラーがあった場合はその一覧を表示
-                var errorMsg = new StringBuilder();
-
-                errorMsg.AppendLine("出力時に以下のエラーが発生しました");
-                foreach (var exception in exceptions)
-                {
-                    errorMsg.AppendLine($"番号: {exception.SheetNumber} シート名: {exception.SheetName} エラー内容: {exception.Message}");
-                }
-                MessageBox.Show(errorMsg.ToString(), "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                var errMsg = string.Join(Environment.NewLine, exceptions.Select(e => e.OneLineMessage));
+                var errorWindow = new MessageAndDetailWindow(thisWindow, "変換時に以下のエラーが発生しました", errMsg);
+                errorWindow.ShowDialog();
             }
 
             //出力したExcelファイルを開きます
@@ -271,7 +267,7 @@ namespace DecisionTableMakerApp.ViewModel
             if (excelFilePath.IsExcelFile)
             {
                 var excelOpeningWindow = new ProgressWindow(
-                    System.Windows.Application.Current.MainWindow, "起動中", "出力したExcelファイルを開いています...");
+                    thisWindow, "起動中", "出力したExcelファイルを開いています...");
                 excelOpeningWindow.Show();
 
                 try
