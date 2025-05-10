@@ -17,6 +17,7 @@ using System.IO;
 using System.IO.Enumeration;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -29,7 +30,7 @@ namespace DecisionTableMakerApp.ViewModel
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ImportTableCommand { get; }
         public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
-        public ReactiveCommand ExportMultiSheetExcelCommand { get; } = new ReactiveCommand();
+        public ReactiveCommand<Task> ExportMultiSheetExcelCommand { get; } = new ReactiveCommand<Task>();
 
         public ReactiveProperty<string> UncoveredCountText { get; } = new ReactiveProperty<string>("-");
         public ReactiveProperty<string> FormulaText { get; set; } = new ReactiveProperty<string>("");
@@ -74,7 +75,7 @@ namespace DecisionTableMakerApp.ViewModel
             });
 
             ExportExcelCommand.Subscribe(ExportPreviewedExcel);
-            ExportMultiSheetExcelCommand.Subscribe(ExportMultiSheetExcel);
+            ExportMultiSheetExcelCommand.Subscribe(async _ => await ExportMultiSheetExcel());
 
             ImportTableCommand = new ReactiveCommand();
             ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
@@ -205,7 +206,7 @@ namespace DecisionTableMakerApp.ViewModel
         /// 検査観点,計算式を書いたExcelの範囲コピーを読み込んで、決定表を作成する
         /// Excelファイルは1つで、シート数が複数
         /// </summary>
-        private void ExportMultiSheetExcel()
+        private async Task ExportMultiSheetExcel()
         {
             //Excelの範囲をコピーしたテキストかチェック
             var text = Clipboard.GetText();
@@ -227,31 +228,64 @@ namespace DecisionTableMakerApp.ViewModel
             (bool success, string fileName) = ShowInputFilePath(defaultFileName);
             if (!success) return;
 
+            //プログレスダイアログを表示
+            var progressWindow = new ProgressWindow(System.Windows.Application.Current.MainWindow, "作成中", "Excelファイルを出力中です。少しお待ちください...");
+            progressWindow.Show();
+
+            List<ExcelSheetCreateException> exceptions = new ();
+
             try
             {
-                List<ExcelSheetCreateException> exceptions = ExportExcelFile(inspectionAndFormulaPairList, exportTime, fileName);
-
-                if (exceptions.Count > 0)
+                await Task.Run(() =>
                 {
-                    //エラーがあった場合はその一覧を表示
-                    var errorMsg = new StringBuilder();
-
-                    errorMsg.AppendLine("出力時に以下のエラーが発生しました");
-                    foreach (var exception in exceptions)
-                    {
-                        errorMsg.AppendLine($"番号: {exception.SheetNumber} シート名: {exception.SheetName} エラー内容: {exception.Message}");
-                    }
-                    MessageBox.Show(errorMsg.ToString(), "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                    exceptions = ExportExcelFile(inspectionAndFormulaPairList, exportTime, fileName);
+                });
             }
             catch (Exception ex)
             {
                 //エラー表示
                 MessageBox.Show("Excelの出力に失敗しました。" + Environment.NewLine + ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            finally
+            {
+                //プログレスダイアログを閉じる
+                progressWindow.Close();
             }
 
-            //Excelを開く
-            LaunchExcel(fileName);
+            if (exceptions.Count > 0)
+            {
+                //エラーがあった場合はその一覧を表示
+                var errorMsg = new StringBuilder();
+
+                errorMsg.AppendLine("出力時に以下のエラーが発生しました");
+                foreach (var exception in exceptions)
+                {
+                    errorMsg.AppendLine($"番号: {exception.SheetNumber} シート名: {exception.SheetName} エラー内容: {exception.Message}");
+                }
+                MessageBox.Show(errorMsg.ToString(), "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            //出力したExcelファイルを開きます
+            var excelFilePath = new ExcelFilePath(fileName);
+            if (excelFilePath.IsExcelFile)
+            {
+                var excelOpeningWindow = new ProgressWindow(
+                    System.Windows.Application.Current.MainWindow, "起動中", "出力したExcelファイルを開いています...");
+                excelOpeningWindow.Show();
+
+                try
+                {
+                    excelFilePath.LaunchExcelWithProcess();
+
+                    //Excelを開くのに時間がかかる場合があるので、少し待つ
+                    await Task.Delay(1000);
+                }
+                finally
+                {
+                    excelOpeningWindow.Close();
+                }
+            }
         }
 
         private List<ExcelSheetCreateException> ExportExcelFile(List<(string Inspection, string Formula)> inspectionAndFormulaPairList, DateTime exportTime, string fileName)
