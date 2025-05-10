@@ -107,6 +107,7 @@ namespace DecisionTableLibTest
 
 
     }
+    
 
     internal static class TableFormatHelper
     {
@@ -121,6 +122,43 @@ namespace DecisionTableLibTest
         {
             Assert.Equal(expectedFactor, table.Rows[rowIndex]["因子"]);
             Assert.Equal(expectedLevel, table.Rows[rowIndex]["水準"]);
+        }
+    }
+
+    public class DecisionTableTest_2因子_因子水準の並び順を指定可能
+    {
+        private readonly DecisionTable decisionTable;
+
+        public DecisionTableTest_2因子_因子水準の並び順を指定可能()
+        {
+            decisionTable = new DecisionTable(new List<TestCase>
+            {
+                new TestCase(new List<(string, string)>() {("OS", "Windows"), ("Language", "Japanese")}),
+                new TestCase(new List<(string, string)>() {("OS", "Windows"), ("Language", "English")}),
+                new TestCase(new List<(string, string)>() {("OS", "Mac"), ("Language", "Japanese")}),
+                new TestCase(new List<(string, string)>() {("OS", "Mac"), ("Language", "English")}),
+            },
+            new List<Factor>() {
+                new Factor("Language", new List<Level>() { new Level("English"), new Level("Japanese") }),
+                new Factor("OS", new List<Level>() { new Level("Mac"), new Level("Windows") }),
+            });
+        }
+
+        [Fact]
+        public void DecisionTableは因子と水準が分かる()
+        {
+            var factors = decisionTable.Factors;
+            Assert.Equal(2, factors.Count);
+
+            //因子の並び替えはできない点に注意。これは計算式から算出したテストケースの並び順を尊重するため
+            Assert.Equal("OS", factors[0].Name);
+            Assert.Equal(new Level("Mac"), factors[0].Levels[0]);
+            Assert.Equal(new Level("Windows"), factors[0].Levels[1]);
+
+            Assert.Equal("Language", factors[1].Name);
+            Assert.Equal(new Level("English"), factors[1].Levels[0]);
+            Assert.Equal(new Level("Japanese"), factors[1].Levels[1]);
+
         }
     }
 }

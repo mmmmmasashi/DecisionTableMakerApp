@@ -71,7 +71,7 @@ namespace DecisionTableLib.Decisions
                 IEnumerable<IEnumerable<(string, string)>> combinations = _rpn.EvaluateRPN(rpn, factors);
 
                 var testCases = combinations.Select(factorLevelCombination => new TestCase(factorLevelCombination));
-                var decisionTable = new DecisionTable(testCases);
+                var decisionTable = new DecisionTable(testCases, factors);
 
                 var optimizer = new TestCaseOptimizer();
                 var optResult = optimizer.CalcUncoverdPairNum(decisionTable);

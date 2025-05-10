@@ -72,7 +72,7 @@ namespace DecisionTableLib.FormulaAnalyzer
         /// </summary>
         /// <param name="factorsTmp">書き換え前の因子水準表</param>
         /// <param name="factorOverwriteList">新しく上書きする因子水準表</param>
-        internal IEnumerable<Factor> OverwriteFactors(List<Factor> factorsBefore, List<Factor> factorOverwriteList)
+        internal List<Factor> OverwriteFactors(List<Factor> factorsBefore, List<Factor> factorOverwriteList)
         {
             var factorsAfter = new List<Factor>(factorsBefore);
 
