@@ -33,7 +33,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Button Grid.Column="1" Width="96" Content="Excelから取込"
+                    <Button Grid.Column="1" Width="64" Content="編集"
                             Command="{Binding ImportTableCommand}" HorizontalAlignment="Right"/>
                     <TreeView Grid.Row="1" x:Name="TreeView" ItemsSource="{Binding FactorAndLevelTreeItems}">
                         <TreeView.ItemContainerStyle>

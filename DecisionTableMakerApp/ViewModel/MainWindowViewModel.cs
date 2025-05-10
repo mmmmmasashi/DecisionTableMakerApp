@@ -25,10 +25,12 @@ namespace DecisionTableMakerApp.ViewModel
 {
     internal class MainWindowViewModel
     {
+
+        private Window ThisWindow => System.Windows.Application.Current.MainWindow;
         public ObservableCollection<TreeNode> FactorAndLevelTreeItems { get; private set; }
         public ReactiveCommand RefreshCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ShowOptionSettingCommand { get; } = new ReactiveCommand();
-        public ReactiveCommand ImportTableCommand { get; }
+        public ReactiveCommand ImportTableCommand { get; } = new ReactiveCommand();
         public ReactiveCommand ExportExcelCommand { get; } = new ReactiveCommand();
         public ReactiveCommand<Task> ExportMultiSheetExcelCommand { get; } = new ReactiveCommand<Task>();
 
@@ -64,7 +66,7 @@ namespace DecisionTableMakerApp.ViewModel
             ShowOptionSettingCommand.Subscribe(_ =>
             {
                 var optionWindow = new OptionSettingWindow();
-                optionWindow.Owner = System.Windows.Application.Current.MainWindow;
+                optionWindow.Owner = ThisWindow;
                 optionWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 bool? isChanged = optionWindow.ShowDialog();
                 if (isChanged == true)
@@ -77,8 +79,7 @@ namespace DecisionTableMakerApp.ViewModel
             ExportExcelCommand.Subscribe(ExportPreviewedExcel);
             ExportMultiSheetExcelCommand.Subscribe(async _ => await ExportMultiSheetExcel());
 
-            ImportTableCommand = new ReactiveCommand();
-            ImportTableCommand.Subscribe(_ => ImportFactorAndLevelTableData());
+            ImportTableCommand.Subscribe(ImportFactorAndLevelTableData);
 
             FactorAndLevelTreeItems = new ObservableCollection<TreeNode>();
             FactorAndLevelTreeItems.Add(new TreeNode("root"));//これがないと要素観点表無の時に動かない
@@ -208,19 +209,15 @@ namespace DecisionTableMakerApp.ViewModel
         /// </summary>
         private async Task ExportMultiSheetExcel()
         {
-            //Excelの範囲をコピーしたテキストかチェック
-            var text = Clipboard.GetText();
-            var checkResult = ExcelRange.CheckIfExcelCopiedText(text);
-            if (!checkResult.IsOk)
-            {
-                var errMessage = $"{checkResult.ErrorMsg}\n" + "観点と計算式の2列をクリップボードにコピーしてから実行してください。";
-                ShowMessageBoxWithImage(checkResult.ErrorMsg, "pack://application:,,,/Assets/example_kanten_keisanshiki.png");
-                return;
-            }
+            var pasteWindow = new ExcelPasteWindow(ThisWindow, "検査観点と計算式を入力してください。Excelで範囲選択しての貼り付けも可能です。", "検査観点", "ケース計算式");
+            var pasted = pasteWindow.ShowDialog();
+            if (!(pasted ?? false)) return;
+
+            var text = string.Join(Environment.NewLine, pasteWindow.Rows.Select(row => row.ToLine()));
 
             //必要な情報の取得
             var range = new ExcelRange(text);
-            List<(string Inspection, string Formula)> inspectionAndFormulaPairList = range.ToInspectionAndFormulaList();
+            List<(string Inspection, string Formula)> inspectionAndFormulaPairList = range.ToTwoColumnRows();
 
             //出力ファイル名を作成・ユーザーに保存先を選択してもらう
             var exportTime = DateTime.Now;
@@ -382,15 +379,11 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void ImportFactorAndLevelTableData()
         {
-            var text = Clipboard.GetText();
-            var checkResult = ExcelRange.CheckIfExcelCopiedText(text);
-            if (!checkResult.IsOk)
-            {
-                var errMessage = $"{checkResult.ErrorMsg}\n" + "因子と水準の2列をクリップボードにコピーしてから実行してください。";
-                ShowMessageBoxWithImage(checkResult.ErrorMsg, "pack://application:,,,/Assets/example_factor_level.png");
-                return;
-            }
+            var window = new ImportFactorLevelTreeWindow(ThisWindow, "因子と水準を入力してください。", "因子", "水準");
+            var result = window.ShowDialog();
+            if (result != true) return;
 
+            var text = string.Join(Environment.NewLine, window.Rows.Select(row => row.ToLine()));
             LoadFactorLevelTable(text);
             SaveAll();
         }
@@ -405,6 +398,7 @@ namespace DecisionTableMakerApp.ViewModel
 
             _latestFactorLevelTable = text;
         }
+
     }
 
     public static class DataTableExtension

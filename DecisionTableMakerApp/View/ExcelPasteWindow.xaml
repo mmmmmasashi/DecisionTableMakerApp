@@ -1,0 +1,34 @@
+﻿<Window x:Class="DecisionTableMakerApp.View.ExcelPasteWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Excel貼り付け" Height="400" Width="600" WindowStartupLocation="CenterOwner">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- メッセージ -->
+            <RowDefinition Height="*"/>
+            <!-- DataGrid -->
+            <RowDefinition Height="Auto"/>
+            <!-- ボタン -->
+        </Grid.RowDefinitions>
+
+        <!-- メッセージフィールド -->
+        <TextBlock Text="{Binding Message, Mode=OneWay}" FontSize="16" Margin="0,0,0,10" />
+
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" Margin="0,0,0,10" PreviewKeyDown="DataGrid_PreviewKeyDown">
+            <DataGrid.Columns>
+                <!-- 検査観点列 -->
+                <DataGridTextColumn Header="{Binding Col1Name}" Binding="{Binding Field1}" Width="*" CanUserSort="False"/>
+                <!-- ケース計算式列 -->
+                <DataGridTextColumn Header="{Binding Col2Name}" Binding="{Binding Field2}" Width="*" CanUserSort="False"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- ボタン -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="キャンセル" Command="{Binding CancelCommand}" Width="80" />
+            <Button Content="OK" Command="{Binding OkCommand}" Width="80" />
+        </StackPanel>
+    </Grid>
+</Window>

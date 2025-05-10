@@ -46,7 +46,9 @@ namespace DecisionTableLib.Excel
                 {
                     if (string.IsNullOrEmpty(columns[i][j]))
                     {
-                        filledColumns[i].Add(filledColumns[i][j - 1]);
+                        int jSafe = j - 1;
+                        var val = (jSafe < 0)? string.Empty : filledColumns[i][jSafe];
+                        filledColumns[i].Add(val);
                     }
                     else
                     {
@@ -114,6 +116,9 @@ namespace DecisionTableLib.Excel
             //   L Chinese
 
             var rawRows = ToTable(_rangeTsvText);
+
+            if (rawRows.Count == 0) return new TreeNode("root");
+
             var rawColumns = ConvertColumnAndRow(rawRows);
             List<List<string>> columns = FullFillTable(rawColumns);
 
@@ -149,10 +154,7 @@ namespace DecisionTableLib.Excel
             return root;
         }
 
-        /// <summary>
-        /// 検査観点とその計算式のリストに変換する
-        /// </summary>
-        public List<(string Inspection, string Formula)> ToInspectionAndFormulaList()
+        public List<(string, string)> ToTwoColumnRows()
         {
             var rawRows = ToTable(_rangeTsvText);
 
