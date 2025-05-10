@@ -158,7 +158,7 @@ namespace DecisionTableMakerApp.ViewModel
                 }
 
                 //Excelを開く
-                StartExcel(fileName);
+                LaunchExcel(fileName);
             }
             catch (Exception)
             {
@@ -167,7 +167,7 @@ namespace DecisionTableMakerApp.ViewModel
             }
         }
 
-        private void StartExcel(string fileName)
+        private void LaunchExcel(string fileName)
         {
             if (!File.Exists(fileName)) return;
 
@@ -217,32 +217,20 @@ namespace DecisionTableMakerApp.ViewModel
                 return;
             }
 
+            //必要な情報の取得
             var range = new ExcelRange(text);
             List<(string Inspection, string Formula)> inspectionAndFormulaPairList = range.ToInspectionAndFormulaList();
 
+            //出力ファイル名を作成・ユーザーに保存先を選択してもらう
             var exportTime = DateTime.Now;
-
-            var excelProperty = new ExcelBookProperty(
-                AuthorText.Value,
-                exportTime
-            );
-
-            //出力ファイル名を作成
             var defaultFileName = exportTime.ToString("yyyyMMddHHmmss") + "_ディシジョンテーブル.xlsx";
-
             (bool success, string fileName) = ShowInputFilePath(defaultFileName);
             if (!success) return;
 
             try
             {
-                int sheetNumber = 1;
-                var sheetProperties = inspectionAndFormulaPairList.Select(pair =>
-                {
-                    var sheetName = $"No.{sheetNumber++}_{pair.Inspection}";
-                    return new ExcelSheetProperty(sheetName, pair.Inspection, pair.Formula);
-                }).ToList();
+                List<ExcelSheetCreateException> exceptions = ExportExcelFile(inspectionAndFormulaPairList, exportTime, fileName);
 
-                var exceptions = new ExcelFile(CreateNewDecisionDataTable, excelProperty, sheetProperties).Export(fileName);
                 if (exceptions.Count > 0)
                 {
                     //エラーがあった場合はその一覧を表示
@@ -255,13 +243,29 @@ namespace DecisionTableMakerApp.ViewModel
                     }
                     MessageBox.Show(errorMsg.ToString(), "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-                StartExcel(fileName);
             }
             catch (Exception ex)
             {
                 //エラー表示
                 MessageBox.Show("Excelの出力に失敗しました。" + Environment.NewLine + ex.Message, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+            //Excelを開く
+            LaunchExcel(fileName);
+        }
+
+        private List<ExcelSheetCreateException> ExportExcelFile(List<(string Inspection, string Formula)> inspectionAndFormulaPairList, DateTime exportTime, string fileName)
+        {
+            var sheetProperties = inspectionAndFormulaPairList
+                .Select((pair, index) =>
+                {
+                    var sheetName = $"No.{index + 1}_{pair.Inspection}";
+                    return new ExcelSheetProperty(sheetName, pair.Inspection, pair.Formula);
+                }).ToList();
+
+            var excelProperty = new ExcelBookProperty(AuthorText.Value, exportTime);
+            var exceptions = new ExcelFile(CreateNewDecisionDataTable, excelProperty, sheetProperties).Export(fileName);
+            return exceptions;
         }
 
         private void SaveAuthor()

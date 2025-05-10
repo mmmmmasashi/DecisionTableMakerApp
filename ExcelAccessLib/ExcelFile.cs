@@ -37,6 +37,10 @@ namespace ExcelAccessLib
             _sheetPropertyList = sheetPropertyList;
         }
 
+        /// <summary>
+        /// Excelファイルを出力する
+        /// </summary>
+        /// <returns>変換時に起きた各シートの例外のリスト</returns>
         public List<ExcelSheetCreateException> Export(string targetFilePath)
         {
             //親フォルダがなければ例外
