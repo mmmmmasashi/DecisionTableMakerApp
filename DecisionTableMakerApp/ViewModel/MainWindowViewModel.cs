@@ -377,12 +377,15 @@ namespace DecisionTableMakerApp.ViewModel
 
         private void ImportFactorAndLevelTableData()
         {
-            var text = Clipboard.GetText();
+            var window = new ExcelPasteWindow("因子と水準を入力してください。", "因子", "水準");
+            var result = window.ShowDialog();
+            if (result != true) return;
+
+            var text = string.Join(Environment.NewLine, window.Rows.Select(row => row.ToLine()));
             var checkResult = ExcelRange.CheckIfExcelCopiedText(text);
             if (!checkResult.IsOk)
             {
-                var errMessage = $"{checkResult.ErrorMsg}\n" + "因子と水準の2列をクリップボードにコピーしてから実行してください。";
-                ShowMessageBoxWithImage(checkResult.ErrorMsg, "pack://application:,,,/Assets/example_factor_level.png");
+                MessageBox.Show("解釈に失敗しました。因子と水準の2列をクリップボードにコピーしてから実行してください。", "エラー");
                 return;
             }
 
