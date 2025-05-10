@@ -149,10 +149,7 @@ namespace DecisionTableLib.Excel
             return root;
         }
 
-        /// <summary>
-        /// 検査観点とその計算式のリストに変換する
-        /// </summary>
-        public List<(string Inspection, string Formula)> ToInspectionAndFormulaList()
+        public List<(string, string)> ToTwoColumnRows()
         {
             var rawRows = ToTable(_rangeTsvText);
 

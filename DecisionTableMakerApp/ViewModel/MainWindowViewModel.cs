@@ -208,19 +208,15 @@ namespace DecisionTableMakerApp.ViewModel
         /// </summary>
         private async Task ExportMultiSheetExcel()
         {
-            //Excelの範囲をコピーしたテキストかチェック
-            var text = Clipboard.GetText();
-            var checkResult = ExcelRange.CheckIfExcelCopiedText(text);
-            if (!checkResult.IsOk)
-            {
-                var errMessage = $"{checkResult.ErrorMsg}\n" + "観点と計算式の2列をクリップボードにコピーしてから実行してください。";
-                ShowMessageBoxWithImage(checkResult.ErrorMsg, "pack://application:,,,/Assets/example_kanten_keisanshiki.png");
-                return;
-            }
+            var pasteWindow = new ExcelPasteWindow("検査観点と計算式を入力してください。Excelで範囲選択しての貼り付けも可能です。");
+            var pasted = pasteWindow.ShowDialog();
+            if (!(pasted ?? false)) return;
+
+            var text = string.Join(Environment.NewLine, pasteWindow.Rows.Select(row => row.ToLine()));
 
             //必要な情報の取得
             var range = new ExcelRange(text);
-            List<(string Inspection, string Formula)> inspectionAndFormulaPairList = range.ToInspectionAndFormulaList();
+            List<(string Inspection, string Formula)> inspectionAndFormulaPairList = range.ToTwoColumnRows();
 
             //出力ファイル名を作成・ユーザーに保存先を選択してもらう
             var exportTime = DateTime.Now;
