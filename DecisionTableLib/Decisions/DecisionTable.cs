@@ -20,14 +20,16 @@ namespace DecisionTableLib.Decisions
         /// <summary>
         /// 因子のリスト
         /// </summary>
-        public List<Factor> Factors { get => CreateFactors(); }
+        public List<Factor> Factors { get; }
 
         /// <summary>
         /// 決定表のコンストラクタ
         /// </summary>
-        public DecisionTable(IEnumerable<TestCase> testCases)
+        /// <param name="factorsToOrderLevelsBy">水準の並び順を変更するためのリスト</param>
+        public DecisionTable(IEnumerable<TestCase> testCases, List<Factor> factorsToOrderLevelsBy = null)
         {
             TestCases = testCases.ToList();
+            Factors = CreateFactors(factorsToOrderLevelsBy);
         }
 
         public override string ToString()
@@ -40,7 +42,7 @@ namespace DecisionTableLib.Decisions
             return sb.ToString().TrimEnd('\n', '\r'); // 最後の改行を削除
         }
 
-        private List<Factor> CreateFactors()
+        private List<Factor> CreateFactors(List<Factor> factorsToOrderLevelsBy)
         {
             var factorNames = TestCases.SelectMany(tc => tc.FactorNames).Distinct();
 
@@ -55,6 +57,12 @@ namespace DecisionTableLib.Decisions
                     if (levels.Contains(level)) continue;
                     levels.Add(level);
                 }
+                //levelを並び替える
+                if (factorsToOrderLevelsBy != null)
+                {
+                    levels = levels.OrderBy(eachLevel => factorsToOrderLevelsBy.FirstOrDefault(f => f.Name == factorName)?.Levels.IndexOf(eachLevel) ?? 0).ToList();
+                }
+
                 return new Factor(factorName, levels);
             }).ToList();
 
