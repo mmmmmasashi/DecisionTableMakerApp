@@ -3,17 +3,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DecisionTableMakerApp.View"
         mc:Ignorable="d"
         Title="メッセージ" Height="400" Width="400">
-    <Grid>
+    <Grid d:DataContext="{d:DesignData}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="{Binding Message, Mode=OneWay}" FontSize="16" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"/>
+
+        <!-- メッセージ表示 -->
+        <TextBlock Text="{Binding Message, Mode=OneWay}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"/>
+
+        <!-- 詳細表示 -->
         <TextBox Text="{Binding Detail, Mode=OneWay}" Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" IsReadOnly="True"/>
+
+        <!-- OKボタン -->
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right" Margin="10">
             <Button Command="{Binding OkCommand}" Content="OK" Width="80"/>
         </StackPanel>
