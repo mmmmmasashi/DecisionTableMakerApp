@@ -30,10 +30,8 @@
             <DataGrid Grid.Row="1" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" Margin="0,0,0,10" 
                       PreviewKeyDown="DataGrid_PreviewKeyDown" CurrentCellChanged="DataGrid_CurrentCellChanged">
                 <DataGrid.Columns>
-                    <!-- 検査観点列 -->
-                    <DataGridTextColumn Header="{Binding Col1Name}" Binding="{Binding Field1}" Width="*" CanUserSort="False"/>
-                    <!-- ケース計算式列 -->
-                    <DataGridTextColumn Header="{Binding Col2Name}" Binding="{Binding Field2}" Width="*" CanUserSort="False"/>
+                    <DataGridTextColumn Header="因子" Binding="{Binding Field1}" Width="*" CanUserSort="False"/>
+                    <DataGridTextColumn Header="水準" Binding="{Binding Field2}" Width="*" CanUserSort="False"/>
                 </DataGrid.Columns>
             </DataGrid>
             
@@ -47,7 +45,7 @@
                     </Style>
                 </TreeView.ItemContainerStyle>
                 <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate DataType="local:Person" ItemsSource="{Binding Children}">
+                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                         <TreeViewItem Header="{Binding Name}"/>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
